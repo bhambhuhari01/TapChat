@@ -10,11 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Outfit & Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs -->
+    
+    <!-- Firebase SDKs (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase.js"></script>
 
     <script>
         tailwind.config = {
@@ -67,17 +67,16 @@
 </head>
 <body class="h-full bg-slate-100 font-sans text-slate-800 antialiased select-none overflow-hidden">
 
-    <!-- Recaptcha Container for Firebase OTP -->
+    <!-- Hidden Recaptcha Container for Firebase Phone OTP -->
     <div id="recaptcha-container"></div>
 
-    <!-- ================= 1. AUTHENTICATION VIEW OVERLAY (ONLY SHOWN IF NOT LOGGED IN) ================= -->
+    <!-- ================= 1. AUTHENTICATION VIEW OVERLAY ================= -->
     <div id="authView" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200/80 space-y-6">
             
             <!-- Custom App Logo & Title Header -->
             <div class="text-center space-y-2 flex flex-col items-center">
                 <div class="inline-flex p-1 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-xl shadow-indigo-500/20 mb-1 w-16 h-16 items-center justify-center overflow-hidden">
-                    <!-- LOGO PNG WITH FALLBACK -->
                     <img src="logo.png" alt="TapChat Logo" class="w-full h-full object-cover rounded-xl bg-white" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-comments text-white text-3xl\'></i>';">
                 </div>
                 <h1 class="font-heading font-extrabold text-3xl text-slate-900 tracking-tight">TapChat</h1>
@@ -641,8 +640,117 @@
 
     </div>
 
+    <!-- ================= 3. ALL INLINED JAVASCRIPT & FIREBASE CODE ================= -->
     <script>
-        // App Language Dictionary
+        // --- FIREBASE INITIALIZATION & AUTH LOGIC ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAtK4US0eTXURt2Uutb9GYif_NclzXfhZM",
+            authDomain: "tapchat-official.firebaseapp.com",
+            projectId: "tapchat-official",
+            storageBucket: "tapchat-official.firebasestorage.app",
+            messagingSenderId: "664579432894",
+            appId: "1:664579432894:web:5e4af6d651b65b693f99ef",
+            measurementId: "G-C6C3GJENKN"
+        };
+
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        function getRecaptchaVerifier() {
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {}
+                });
+            }
+            return window.recaptchaVerifier;
+        }
+
+        function sendOTP() {
+            const phoneInput = document.getElementById('phoneNumber');
+            if (!phoneInput) return;
+            
+            let phoneNumber = phoneInput.value.trim();
+            if (!phoneNumber) {
+                alert("कृपया मोबाइल नंबर दर्ज करें (Enter Phone Number)");
+                return;
+            }
+
+            if (!phoneNumber.startsWith('+')) {
+                phoneNumber = '+91' + phoneNumber;
+            }
+
+            const appVerifier = getRecaptchaVerifier();
+            const btnSend = document.getElementById('btnSendOtp');
+            if(btnSend) btnSend.innerText = "OTP भेज रहे हैं...";
+
+            firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    window.confirmationResult = confirmationResult;
+                    document.getElementById('otpBox').classList.remove('hidden');
+                    if(btnSend) btnSend.innerText = "OTP दोबारा भेजें";
+                    showToast('OTP सफलतापूर्वक भेज दिया गया है!');
+                })
+                .catch((error) => {
+                    console.error("OTP Error:", error);
+                    if(btnSend) btnSend.innerText = "OTP भेजें (Get OTP)";
+                    alert("OTP Error: " + error.message);
+                });
+        }
+
+        function verifyOTP() {
+            const codeInput = document.getElementById('otpCode');
+            if (!codeInput) return;
+
+            const code = codeInput.value.trim();
+            if (!code) {
+                alert("कृपया 6-अंकों का OTP दर्ज करें");
+                return;
+            }
+
+            if (!window.confirmationResult) {
+                alert("पहले OTP भेजें!");
+                return;
+            }
+
+            window.confirmationResult.confirm(code)
+                .then((result) => {
+                    showToast('सफलतापूर्वक लॉगिन हो गया!');
+                    document.getElementById('authView').classList.add('hidden');
+                })
+                .catch((error) => {
+                    alert('गलत OTP या त्रुटि: ' + error.message);
+                });
+        }
+
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    showToast("Google से सफलतापूर्वक लॉगिन हुआ!");
+                    document.getElementById('authView').classList.add('hidden');
+                })
+                .catch((error) => {
+                    console.error("Google Login Error:", error);
+                    alert("Google Login Error: " + error.message);
+                });
+        }
+
+        function appleLogin() {
+            const provider = new firebase.auth.OAuthProvider('apple.com');
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    showToast("Apple ID से सफलतापूर्वक लॉगिन हुआ!");
+                    document.getElementById('authView').classList.add('hidden');
+                })
+                .catch((error) => {
+                    console.error("Apple Login Error:", error);
+                    alert("Apple Login Error: " + error.message);
+                });
+        }
+
+        // --- APP STATE & DICTIONARIES ---
         let currentLang = 'HI';
         const i18n = {
             HI: {
@@ -683,14 +791,12 @@
             }
         };
 
-        // User Details
         let currentUser = {
             name: "Aarav Sharma",
             phone: "+91 9876543210",
             avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
         };
 
-        // Initial Sample Feed Data
         let postsData = [
             {
                 id: 1,
@@ -718,13 +824,11 @@
             }
         ];
 
-        // Sample Statuses
         let statusData = [
             { id: 1, name: "Rohan Verma", time: "15m ago", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" },
             { id: 2, name: "Sneha Reddy", time: "1h ago", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80" }
         ];
 
-        // Sample Video Reels
         let reelsData = [
             {
                 id: 1,
@@ -744,19 +848,16 @@
             }
         ];
 
-        // Initialize App & Check Auth State
+        // --- INIT & AUTH OBSERVER ---
         window.onload = function() {
             renderPosts();
             renderStories();
             renderReels();
 
-            // AUTOMATIC AUTHENTICATION STATE TRACKER
             if (typeof firebase !== 'undefined' && firebase.auth) {
                 firebase.auth().onAuthStateChanged((user) => {
                     if (user) {
-                        // User is logged in -> Hide login modal automatically!
                         document.getElementById('authView').classList.add('hidden');
-                        
                         currentUser.name = user.displayName || user.phoneNumber || "TapChat User";
                         currentUser.phone = user.phoneNumber || user.email || "+91 9876543210";
                         if(user.photoURL) currentUser.avatar = user.photoURL;
@@ -767,23 +868,22 @@
                             document.getElementById('userHeaderAvatar').src = currentUser.avatar;
                             document.getElementById('drawerUserImg').src = currentUser.avatar;
                         }
+                    } else {
+                        document.getElementById('authView').classList.remove('hidden');
                     }
                 });
             }
         };
 
-        // Instant Guest Demo Mode
         function enterDemoMode() {
             document.getElementById('authView').classList.add('hidden');
-            showToast('Welcome to TapChat Demo Mode! 🎉');
+            showToast('Welcome to TapChat Guest Demo! 🎉');
         }
 
-        // Multi-Language Toggle
         function cycleLanguage() {
             if (currentLang === 'HI') currentLang = 'EN';
             else if (currentLang === 'EN') currentLang = 'HINGLISH';
             else currentLang = 'HI';
-
             setLanguage(currentLang);
         }
 
@@ -794,7 +894,6 @@
             document.getElementById('txtSharePrompt').textContent = i18n[lang].sharePrompt;
             document.getElementById('drawerLangBtn').textContent = lang;
 
-            // Update Auth buttons active state
             ['HI', 'EN', 'HING'].forEach(l => {
                 const btn = document.getElementById(`langBtn${l}`);
                 if(btn) {
@@ -805,11 +904,9 @@
                     }
                 }
             });
-
             showToast(`Language switched to ${lang}`);
         }
 
-        // Tab Switching
         function switchTab(tab) {
             const tabs = ['feed', 'reels', 'aistudio', 'chats', 'live'];
             tabs.forEach(t => {
@@ -827,7 +924,6 @@
             });
         }
 
-        // Render Posts Stream
         function renderPosts() {
             const container = document.getElementById('postsStream');
             container.innerHTML = postsData.map(post => `
@@ -945,7 +1041,6 @@
             }
         }
 
-        // AI Studio Functions
         function switchAITab(tab) {
             const wBtn = document.getElementById('aiSubTabWriter');
             const iBtn = document.getElementById('aiSubTabImage');
@@ -977,7 +1072,7 @@
             const typingId = appendChatMessage('ai', 'Thinking... / सोच रहा हूँ... ✨');
 
             try {
-                const apiKey = ""; // Auto injected
+                const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -1088,7 +1183,6 @@
             return msgId;
         }
 
-        // UI Modals Logic
         function toggleProfileDrawer() {
             document.getElementById('profileDrawer').classList.toggle('hidden');
         }

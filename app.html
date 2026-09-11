@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="hi" class="h-full bg-slate-900 text-slate-100">
+<html lang="hi" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapChat - Web App</title>
+    <title>TapChat - Modern Social Network</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter & Hind -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Outfit & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -22,289 +22,283 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#eef2ff',
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
                             500: '#6366f1',
                             600: '#4f46e5',
                             700: '#4338ca',
-                        }
+                        },
+                        lightBg: '#f8fafc',
+                        cardBg: '#ffffff',
                     },
                     fontFamily: {
-                        sans: ['Inter', 'Hind', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Custom scrollbar and snap scroll for reels */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .reel-container { scroll-snap-type: y mandatory; }
         .reel-card { scroll-snap-align: start; }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
         }
-        .active-story-ring { animation: pulse-ring 2s infinite; }
+
+        .active-story-ring {
+            background: linear-gradient(45deg, #f59e0b, #ec4899, #6366f1);
+            padding: 2px;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+        .pulse-live { animation: pulse-ring 2s infinite; }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans bg-slate-950 text-slate-100 antialiased select-none overflow-hidden">
+<body class="h-full bg-slate-100 font-sans text-slate-800 antialiased select-none overflow-hidden">
 
-    <!-- Top Header -->
-    <header class="h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 flex items-center justify-between px-4">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                    <i class="fa-solid fa-comments text-indigo-400 text-lg"></i>
-                </div>
-            </div>
-            <div>
-                <h1 class="font-bold text-xl tracking-tight bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">TapChat</h1>
-                <p class="text-[10px] text-slate-400 font-medium" id="langSubText">भारत का अपना सोशल नेटवर्क</p>
-            </div>
-        </div>
+    <!-- Recaptcha Container for Firebase OTP -->
+    <div id="recaptcha-container"></div>
 
-        <div class="flex items-center gap-2">
-            <!-- Language Switcher -->
-            <button onclick="toggleAppLanguage()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-indigo-300 font-semibold transition">
-                <i class="fa-solid fa-language mr-1"></i><span id="langBtnLabel">HI / EN</span>
-            </button>
-            <!-- Search Modal Button -->
-            <button onclick="openSearchModal()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 border border-slate-700/60 transition">
-                <i class="fa-solid fa-magnifying-glass text-sm"></i>
-            </button>
-            <!-- User Profile Drawer Button -->
-            <button onclick="toggleProfileDrawer()" class="relative group">
-                <img id="userHeaderAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500/80 shadow-md">
-                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Content Dynamic View Area -->
-    <main class="flex-1 relative overflow-hidden bg-slate-950 max-w-md w-full mx-auto sm:border-x sm:border-slate-800">
-        
-        <!-- ================= TAB 1: FEED ================= -->
-        <section id="view-feed" class="h-full overflow-y-auto hide-scrollbar pb-24 p-3 space-y-4">
+    <!-- ================= 1. AUTHENTICATION VIEW (LOGIN / REGISTER) ================= -->
+    <div id="authView" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200/80 space-y-6">
             
-            <!-- Stories Bar -->
-            <div class="flex items-center gap-3 overflow-x-auto hide-scrollbar py-2 px-1">
-                <!-- Add My Story -->
-                <div onclick="openNewStatusModal()" class="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0">
-                    <div class="relative w-14 h-14 rounded-full border-2 border-dashed border-indigo-500 p-0.5 flex items-center justify-center bg-slate-800">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-full object-cover opacity-60">
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <i class="fa-solid fa-plus bg-indigo-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md"></i>
-                        </div>
-                    </div>
-                    <span class="text-[11px] font-medium text-slate-300">My Status</span>
+            <!-- Logo & Title Header -->
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-xl shadow-indigo-500/20 mb-1">
+                    <i class="fa-solid fa-comments text-white text-3xl"></i>
                 </div>
-
-                <!-- Friends Stories -->
-                <div id="feedStoriesList" class="flex items-center gap-3">
-                    <!-- Dynamic Stories Inserted Here -->
-                </div>
+                <h1 class="font-heading font-extrabold text-3xl text-slate-900 tracking-tight">TapChat</h1>
+                <p id="authSubtitle" class="text-xs font-medium text-slate-500">भारत का अपना सबसे सुरक्षित और आधुनिक सोशल नेटवर्क</p>
             </div>
 
-            <!-- Create Post Bar -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg">
-                <div class="flex items-center gap-3">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-full object-cover">
-                    <button onclick="openCreatePostModal()" class="flex-1 bg-slate-800 hover:bg-slate-700/80 text-left px-4 py-2.5 rounded-xl text-slate-400 text-xs border border-slate-700/50 transition">
-                        What's on your mind? / क्या सोच रहे हैं?
+            <!-- Language Switcher Bar in Auth -->
+            <div class="flex items-center justify-center gap-2 bg-slate-100 p-1 rounded-2xl">
+                <button onclick="setLanguage('HI')" id="langBtnHI" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-600 shadow-sm transition">हिंदी</button>
+                <button onclick="setLanguage('EN')" id="langBtnEN" class="flex-1 py-1.5 rounded-xl text-xs font-medium text-slate-500 transition">English</button>
+                <button onclick="setLanguage('HINGLISH')" id="langBtnHING" class="flex-1 py-1.5 rounded-xl text-xs font-medium text-slate-500 transition">Hinglish</button>
+            </div>
+
+            <!-- LOGIN METHOD TABS -->
+            <div class="space-y-4">
+                <!-- Phone OTP Login Form -->
+                <div id="phoneLoginForm" class="space-y-3">
+                    <label id="phoneInputLabel" class="text-xs font-semibold text-slate-700 block">मोबाइल नंबर से लॉगिन करें (Phone Login)</label>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-slate-100 text-slate-700 px-3 py-3 rounded-2xl text-xs font-bold border border-slate-200">+91</span>
+                        <input type="tel" id="phoneNumber" placeholder="9876543210" class="flex-1 bg-slate-50 text-slate-900 px-4 py-3 rounded-2xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+                    </div>
+                    
+                    <button onclick="sendOTP()" id="btnSendOtp" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> <span id="labelSendOtp">OTP भेजें (Get OTP)</span>
+                    </button>
+
+                    <!-- OTP Code Input Box -->
+                    <div id="otpBox" class="hidden space-y-2 pt-2 border-t border-slate-100">
+                        <input type="text" id="otpCode" placeholder="Enter 6-digit OTP" class="w-full bg-slate-50 text-slate-900 px-4 py-3 rounded-2xl border border-slate-200 text-xs text-center font-bold tracking-widest focus:outline-none focus:border-indigo-600">
+                        <button onclick="verifyOTP()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-emerald-600/20 transition">
+                            <span id="labelVerifyOtp">OTP वेरिफाई करें (Verify OTP)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative flex items-center my-4">
+                    <div class="flex-grow border-t border-slate-200"></div>
+                    <span class="flex-shrink mx-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">या सोशल अकाउंट से लॉगिन करें</span>
+                    <div class="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <!-- Google & Apple Social Login Buttons -->
+                <div class="space-y-2.5">
+                    <!-- Google Login Button -->
+                    <button onclick="googleLogin()" class="w-full py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 text-xs font-semibold shadow-sm transition flex items-center justify-center gap-3">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Continue with Google</span>
+                    </button>
+
+                    <!-- Apple ID Login Button -->
+                    <button onclick="appleLogin()" class="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-2xl text-xs font-semibold shadow-md transition flex items-center justify-center gap-3">
+                        <i class="fa-brands fa-apple text-base"></i>
+                        <span>Sign in with Apple ID</span>
                     </button>
                 </div>
-                <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800/80 px-2 text-xs text-slate-400">
-                    <button onclick="openCreatePostModal('photo')" class="flex items-center gap-1.5 hover:text-indigo-400 transition">
-                        <i class="fa-regular fa-image text-emerald-400 text-sm"></i> Photo
-                    </button>
-                    <button onclick="openCreatePostModal('poll')" class="flex items-center gap-1.5 hover:text-indigo-400 transition">
-                        <i class="fa-solid fa-square-poll-vertical text-purple-400 text-sm"></i> Poll
-                    </button>
-                    <button onclick="switchTab('ai')" class="flex items-center gap-1.5 hover:text-indigo-400 transition text-amber-300">
-                        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i> AI Assist
+
+                <!-- Instant Demo Access Button -->
+                <div class="pt-2">
+                    <button onclick="enterDemoMode()" class="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-2xl text-xs font-bold border border-indigo-200 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-500"></i>
+                        <span id="labelDemoLogin">बिना लॉगिन ऐप देखें (Instant Guest Demo)</span>
                     </button>
                 </div>
             </div>
-
-            <!-- Feed Posts Stream -->
-            <div id="postsStream" class="space-y-4">
-                <!-- Dynamic Posts Rendered Here -->
-            </div>
-        </section>
-
-        <!-- ================= TAB 2: REELS ================= -->
-        <section id="view-reels" class="hidden h-full relative bg-black">
-            <div id="reelsContainer" class="h-full overflow-y-scroll reel-container hide-scrollbar">
-                <!-- Dynamic Reels Loaded Here -->
-            </div>
-        </section>
-
-        <!-- ================= TAB 3: STATUS ================= -->
-        <section id="view-status" class="hidden h-full overflow-y-auto hide-scrollbar pb-24 p-4 space-y-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-white">Status Updates / स्टेटस</h2>
-                    <p class="text-xs text-slate-400">24 घंटे के लिए अपने दोस्तों के साथ साझा करें</p>
-                </div>
-                <button onclick="openNewStatusModal()" class="w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center text-white shadow-lg transition">
-                    <i class="fa-solid fa-camera"></i>
-                </button>
-            </div>
-
-            <!-- My Status Card -->
-            <div onclick="openNewStatusModal()" class="bg-slate-900 border border-slate-800 p-3 rounded-2xl flex items-center gap-3 cursor-pointer hover:bg-slate-800/60 transition">
-                <div class="relative w-12 h-12 rounded-full bg-indigo-600/20 border-2 border-indigo-500 p-0.5 flex items-center justify-center">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-full object-cover">
-                    <span class="absolute -bottom-1 -right-1 bg-indigo-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs border-2 border-slate-900">+</span>
-                </div>
-                <div class="flex-1">
-                    <h4 class="font-semibold text-sm text-slate-200">My Status</h4>
-                    <p class="text-xs text-slate-400">Tap to add status update</p>
-                </div>
-            </div>
-
-            <!-- Recent Status Updates -->
-            <div class="space-y-2">
-                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">Recent Updates</h3>
-                <div id="statusList" class="space-y-2">
-                    <!-- Dynamic Status List -->
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= TAB 4: AI CHAT (GEMINI) ================= -->
-        <section id="view-ai" class="hidden h-full flex flex-col bg-slate-900">
-            <!-- AI Header -->
-            <div class="p-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-400 via-rose-500 to-indigo-600 p-0.5 shadow-md">
-                        <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                            <i class="fa-solid fa-robot text-amber-400 text-sm"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                            TapChat AI Assistant
-                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full">Gemini</span>
-                        </h3>
-                        <p class="text-[10px] text-emerald-400 flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Online & Ready
-                        </p>
-                    </div>
-                </div>
-                <button onclick="clearAIChat()" class="text-slate-400 hover:text-rose-400 text-xs px-2 py-1 rounded-lg bg-slate-800 border border-slate-700/60 transition">
-                    <i class="fa-solid fa-trash-can mr-1"></i> Clear
-                </button>
-            </div>
-
-            <!-- Quick Suggestions Prompt Chips -->
-            <div class="p-2 bg-slate-950/60 border-b border-slate-800/80 flex gap-2 overflow-x-auto hide-scrollbar text-xs">
-                <button onclick="sendQuickPrompt('Write a catchy Hindi caption for my travel photo!')" class="whitespace-nowrap px-3 py-1.5 rounded-full bg-indigo-900/40 text-indigo-300 border border-indigo-700/50 hover:bg-indigo-800/50 transition">
-                    ✨ Hindi Photo Caption
-                </button>
-                <button onclick="sendQuickPrompt('Suggest 5 trending Instagram hashtags for viral reels')" class="whitespace-nowrap px-3 py-1.5 rounded-full bg-purple-900/40 text-purple-300 border border-purple-700/50 hover:bg-purple-800/50 transition">
-                    🔥 Viral Hashtags
-                </button>
-                <button onclick="sendQuickPrompt('Generate a cute motivational quote for morning status')" class="whitespace-nowrap px-3 py-1.5 rounded-full bg-rose-900/40 text-rose-300 border border-rose-700/50 hover:bg-rose-800/50 transition">
-                    ❤️ Morning Status
-                </button>
-            </div>
-
-            <!-- Chat Messages Log -->
-            <div id="aiChatLog" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
-                <!-- Welcome Message -->
-                <div class="flex gap-2.5 items-start max-w-[85%]">
-                    <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs flex-shrink-0">
-                        <i class="fa-solid fa-sparkles"></i>
-                    </div>
-                    <div class="bg-slate-800 text-slate-200 p-3 rounded-2xl rounded-tl-xs border border-slate-700/60 shadow-sm leading-relaxed">
-                        नमस्ते! मैं आपका **TapChat AI** हूँ। मुझसे कुछ भी पूछें — शायरी, सोशल मीडिया पोस्ट, सलाह या AI फोटो बनवाने का आईडिया! 😊
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Chat Input Bar -->
-            <div class="p-2.5 bg-slate-900 border-t border-slate-800 mb-16">
-                <form onsubmit="handleAISubmit(event)" class="flex items-center gap-2">
-                    <input type="text" id="aiInput" placeholder="Ask AI something... / AI से कुछ पूछें..." class="flex-1 bg-slate-800 text-slate-100 px-4 py-2.5 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 text-xs placeholder:text-slate-500">
-                    <button type="submit" id="aiSendBtn" class="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-lg transition">
-                        <i class="fa-solid fa-paper-plane text-xs"></i>
-                    </button>
-                </form>
-            </div>
-        </section>
-    </main>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 max-w-md mx-auto">
-        <div class="flex justify-around items-center h-16">
-            <button onclick="switchTab('feed')" id="nav-feed" class="nav-btn flex flex-col items-center gap-1 text-indigo-400 transition">
-                <i class="fa-solid fa-house text-lg"></i>
-                <span class="text-[10px] font-medium">Feed</span>
-            </button>
-            <button onclick="switchTab('reels')" id="nav-reels" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition">
-                <i class="fa-solid fa-clapperboard text-lg"></i>
-                <span class="text-[10px] font-medium">Reels</span>
-            </button>
-            <button onclick="switchTab('status')" id="nav-status" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition relative">
-                <span class="absolute top-1 right-3 w-2 h-2 rounded-full bg-rose-500"></span>
-                <i class="fa-solid fa-circle-notch text-lg"></i>
-                <span class="text-[10px] font-medium">Status</span>
-            </button>
-            <button onclick="switchTab('ai')" id="nav-ai" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition">
-                <i class="fa-solid fa-wand-magic-sparkles text-lg text-amber-400"></i>
-                <span class="text-[10px] font-medium text-amber-300">AI Assistant</span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Profile Drawer Modal -->
-    <div id="profileDrawer" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end transition-opacity">
-        <div class="w-80 bg-slate-900 h-full p-5 flex flex-col justify-between border-l border-slate-800 shadow-2xl">
-            <div>
-                <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-                    <h3 class="font-bold text-slate-200 text-sm">Account / प्रोफाइल</h3>
-                    <button onclick="toggleProfileDrawer()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-                
-                <div class="flex items-center gap-3 mb-6">
-                    <img id="drawerUserImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-14 h-14 rounded-full object-cover border-2 border-indigo-500">
-                    <div>
-                        <h4 id="drawerUserName" class="font-bold text-slate-100 text-sm">TapChat User</h4>
-                        <p id="drawerUserPhone" class="text-xs text-slate-400">+91 9876543210</p>
-                        <span class="inline-block mt-1 px-2 py-0.5 bg-indigo-500/20 text-indigo-300 text-[10px] rounded-full font-medium">Verified Member</span>
-                    </div>
-                </div>
-
-                <div class="space-y-2 text-xs text-slate-300">
-                    <div class="p-3 bg-slate-800/80 rounded-xl flex justify-between items-center">
-                        <span>Total Posts</span>
-                        <span class="font-bold text-indigo-400">12</span>
-                    </div>
-                    <div class="p-3 bg-slate-800/80 rounded-xl flex justify-between items-center">
-                        <span>Followers</span>
-                        <span class="font-bold text-purple-400">1.4K</span>
-                    </div>
-                    <div class="p-3 bg-slate-800/80 rounded-xl flex justify-between items-center">
-                        <span>Language / भाषा</span>
-                        <button onclick="toggleAppLanguage()" class="text-xs font-semibold text-indigo-400" id="drawerLangText">Hindi / हिंदी</button>
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="handleUserLogout()" class="w-full py-3 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-xl border border-rose-500/30 text-xs font-bold transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout / लॉगआउट करें
-            </button>
+            
+            <p class="text-[10px] text-center text-slate-400">By continuing, you agree to TapChat's Terms & Privacy Policy.</p>
         </div>
     </div>
 
-    <!-- Create Post Modal -->
-    <div id="createPostModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-4 shadow-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="font-bold text-sm text-slate-100">Create New Post / नई पोस्ट लिखें</h3>
-                <button onclick="closeCreatePostModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <!-- ================= 2. MAIN APPLICATION CONTAINER (LIGHT THEME) ================= -->
+    <div id="appContainer" class="h-full max-w-md w-full mx-auto bg-slate-50 flex flex-col relative shadow-2xl border-x border-slate-200">
+
+        <!-- Top Navigation Header -->
+        <header class="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 flex items-center justify-between px-4">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-0.5 shadow-md shadow-indigo-500/20 cursor-pointer" onclick="switchTab('feed')">
+                    <div class="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
+                        <i class="fa-solid fa-comments text-indigo-600 text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="font-heading font-extrabold text-xl text-slate-900 tracking-tight flex items-center gap-1.5">
+                        TapChat
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    </h1>
+                    <p class="text-[10px] font-medium text-slate-500" id="headerSubText">भारत का अपना सोशल नेटवर्क</p>
+                </div>
             </div>
-            <textarea id="postInputText" rows="4" placeholder="Write something inspiring... / कुछ नया शेयर करें..." class="w-full bg-slate-800 text-xs text
+
+            <div class="flex items-center gap-2">
+                <!-- Multi-language Quick Switch Button -->
+                <button onclick="cycleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1 border border-slate-200">
+                    <i class="fa-solid fa-globe text-indigo-600"></i>
+                    <span id="currentLangLabel">HI</span>
+                </button>
+
+                <!-- Search Button -->
+                <button onclick="openSearchModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition border border-slate-200">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </button>
+
+                <!-- Profile Drawer Trigger -->
+                <button onclick="toggleProfileDrawer()" class="relative group ml-0.5">
+                    <img id="userHeaderAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-xl object-cover border-2 border-indigo-500 shadow-sm">
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Dynamic Scroll Area -->
+        <main class="flex-1 relative overflow-hidden">
+            
+            <!-- ================= TAB 1: FEED ================= -->
+            <section id="view-feed" class="h-full overflow-y-auto hide-scrollbar pb-28 p-3.5 space-y-4">
+                
+                <!-- Category Chips Filter -->
+                <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-0.5">
+                    <button onclick="filterFeed('foryou')" id="chip-foryou" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+                        🔥 <span class="lbl-foryou">For You</span>
+                    </button>
+                    <button onclick="filterFeed('following')" id="chip-following" class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+                        👥 <span class="lbl-following">Following</span>
+                    </button>
+                    <button onclick="filterFeed('trending')" id="chip-trending" class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+                        ⚡ <span class="lbl-trending">Trending Bharat</span>
+                    </button>
+                </div>
+
+                <!-- Story Status Bar -->
+                <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center gap-3.5 overflow-x-auto hide-scrollbar py-0.5">
+                        <!-- Add Story Button -->
+                        <div onclick="openNewStatusModal()" class="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0 group">
+                            <div class="relative w-14 h-14 rounded-2xl border-2 border-dashed border-indigo-500 p-0.5 flex items-center justify-center bg-indigo-50 group-hover:bg-indigo-100 transition">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover opacity-70">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fa-solid fa-plus bg-indigo-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md"></i>
+                                </div>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-700">My Status</span>
+                        </div>
+
+                        <!-- Dynamic Friends Stories -->
+                        <div id="feedStoriesList" class="flex items-center gap-3.5">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Post Card -->
+                <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm space-y-3">
+                    <div class="flex items-center gap-3">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-xl object-cover border border-slate-200">
+                        <button onclick="openCreatePostModal()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-left px-4 py-2.5 rounded-xl text-slate-400 text-xs border border-slate-200 transition flex items-center justify-between">
+                            <span id="txtSharePrompt">Share an idea or photo... / नया पोस्ट शेयर करें</span>
+                            <i class="fa-solid fa-pen-nib text-indigo-600"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-600 font-medium">
+                        <button onclick="openCreatePostModal('photo')" class="flex items-center gap-1.5 hover:text-indigo-600 transition">
+                            <i class="fa-regular fa-image text-emerald-500 text-sm"></i> Photo
+                        </button>
+                        <button onclick="openCreatePostModal('poll')" class="flex items-center gap-1.5 hover:text-indigo-600 transition">
+                            <i class="fa-solid fa-square-poll-vertical text-purple-500 text-sm"></i> Poll
+                        </button>
+                        <button onclick="switchTab('aistudio')" class="flex items-center gap-1.5 text-indigo-600 font-bold hover:text-indigo-700 transition">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 animate-bounce"></i> AI Studio
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Posts Stream -->
+                <div id="postsStream" class="space-y-4">
+                    <!-- Dynamic Posts Rendered Here -->
+                </div>
+            </section>
+
+            <!-- ================= TAB 2: REELS ================= -->
+            <section id="view-reels" class="hidden h-full relative bg-slate-950">
+                <div id="reelsContainer" class="h-full overflow-y-scroll reel-container hide-scrollbar">
+                    <!-- Dynamic Video Reels -->
+                </div>
+            </section>
+
+            <!-- ================= TAB 3: AI STUDIO ================= -->
+            <section id="view-aistudio" class="hidden h-full flex flex-col overflow-y-auto hide-scrollbar pb-28 p-4 space-y-4">
+                
+                <!-- AI Banner -->
+                <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-amber-300">
+                            <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-heading font-extrabold text-lg">TapChat Gemini AI Studio</h2>
+                            <p class="text-xs text-indigo-100 font-medium">Powered by Google Gemini AI</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-indigo-100 leading-relaxed" id="aiStudioBannerDesc">
+                        AI से ऑटो-पोस्ट्स, शायरी, वायरल हैशटैग्स बनाएं या फ़ोटो प्रॉम्ट से सीधा AI इमेज आर्ट जनरेट करें!
+                    </p>
+                </div>
+
+                <!-- Sub Tab Switcher -->
+                <div class="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-sm">
+                    <button onclick="switchAITab('writer')" id="aiSubTabWriter" class="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">
+                        ✍️ AI Content Writer
+                    </button>
+                    <button onclick="switchAITab('image')" id="aiSubTabImage" class="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 transition">
+                        🎨 AI Image Generator
+                    </button>
+                </div>
+
+                <!-- AI Text Assistant Panel -->
+                <div id="panelAIWriter" class="space-y-3">
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar text-xs">
+                        <button onclick="sendQuickPrompt('Write a catchy Hindi caption for my travel picture')" class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-indigo-600 font-medium shadow-sm hover:bg-slate-50">
+                            ✨ Travel Caption
+                        </button>
+                        <button onclick="sendQuickPrompt('Suggest 10 trending hashtags for viral Indian social reels')" class="w

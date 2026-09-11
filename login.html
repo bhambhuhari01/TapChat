@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapChat - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        .login-box { padding: 30px 20px; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #1e1e1e;
+            color: white;
+            outline: none;
+            font-size: 15px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: #1DA1F2;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .btn-google { background: #ea4335; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="app-header">
+        <span>🐦 TapChat</span>
+        <button onclick="toggleLangLogin()" class="lang-btn" id="loginLangBtn">हिंदी</button>
+    </div>
+
+    <div class="login-box">
+        <h2 style="margin-bottom: 10px;" id="loginHeading">Login</h2>
+        <p style="color: #888; font-size: 14px; margin-bottom: 25px;" id="loginSub">Sign in with mobile number or Google account</p>
+
+        <div class="input-group">
+            <input type="tel" id="phoneNumber" placeholder="+91 9876543210">
+        </div>
+        <button class="btn-primary" onclick="sendOTP()" id="btnOtp">Send OTP</button>
+        <div id="recaptcha-container" style="margin-top: 10px;"></div>
+
+        <div id="otpBox" style="display:none; margin-top: 20px;">
+            <div class="input-group">
+                <input type="number" id="otpCode" placeholder="Enter 6-digit OTP">
+            </div>
+            <button class="btn-primary" onclick="verifyOTP()" id="btnVerify">Verify OTP</button>
+        </div>
+
+        <div style="margin: 30px 0; border-top: 1px solid #2a2a2a; position: relative;">
+            <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #121212; padding: 0 10px; color: #666; font-size: 12px;" id="orLabel">OR</span>
+        </div>
+
+        <button class="btn-primary btn-google" onclick="googleLogin()" id="btnGoogle">Sign in with Google</button>
+    </div>
+</div>
+
+<script src="js/firebase.js"></script>
+<script>
+    let currentLang = localStorage.getItem('tapchat_lang') || 'en';
+
+    function applyLoginLang() {
+        if(currentLang === 'hi') {
+            document.getElementById('loginHeading').innerText = "लॉगिन करें";
+            document.getElementById('loginSub').innerText = "मोबाइल नंबर या गूगल अकाउंट से साइन इन करें";
+            document.getElementById('btnOtp').innerText = "OTP भेजें";
+            document.getElementById('btnVerify').innerText = "वेरीफ़ाई करें";
+            document.getElementById('orLabel').innerText = "या";
+            document.getElementById('btnGoogle').innerText = "Google से साइन इन करें";
+            document.getElementById('loginLangBtn').innerText = "English";
+        } else {
+            document.getElementById('loginHeading').innerText = "Login";
+            document.getElementById('loginSub').innerText = "Sign in with mobile number or Google account";
+            document.getElementById('btnOtp').innerText = "Send OTP";
+            document.getElementById('btnVerify').innerText = "Verify OTP";
+            document.getElementById('orLabel').innerText = "OR";
+            document.getElementById('btnGoogle').innerText = "Sign in with Google";
+            document.getElementById('loginLangBtn').innerText = "हिंदी";
+        }
+    }
+
+    function toggleLangLogin() {
+        currentLang = currentLang === 'en' ? 'hi' : 'en';
+        localStorage.setItem('tapchat_lang', currentLang);
+        applyLoginLang();
+    }
+
+    applyLoginLang();
+</script>
+
+</body>
+</html>
+

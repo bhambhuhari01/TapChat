@@ -3,29 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapChat - Official</title>
+    <title>TapChat - Real-time Communication</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .bg-cyan-custom { background-color: #00BCD4; }
-        .text-cyan-custom { color: #00BCD4; }
-    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
 
     <!-- App Container -->
-    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col h-[92vh]">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col h-[92vh]">
         
         <!-- Header -->
-        <div class="bg-cyan-custom text-white p-4 flex justify-between items-center shadow-md">
+        <div class="bg-gradient-to-r from-sky-500 to-blue-600 text-white p-4 flex justify-between items-center shadow-md">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white text-cyan-custom rounded-2xl flex items-center justify-center shadow-md font-extrabold text-xl">
-                    <i class="fa-solid fa-bolt"></i>
+                <div class="w-10 h-10 bg-white rounded-2xl p-1 flex items-center justify-center shadow-inner overflow-hidden">
+                    <img src="logo.png" alt="TapChat Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
-                    <h1 class="text-xl font-extrabold tracking-wide">TapChat</h1>
-                    <p class="text-[10px] text-cyan-100 font-medium">रियल-टाइम चैट ऐप</p>
+                    <h1 class="text-xl font-bold tracking-wide">TapChat</h1>
+                    <p class="text-[10px] text-sky-100 font-medium">Real-time Communication</p>
                 </div>
             </div>
             <button id="logoutBtn" class="hidden text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full font-semibold transition border border-white/30">
@@ -34,15 +30,15 @@
         </div>
 
         <!-- Login Screen -->
-        <div id="loginSection" class="flex-1 flex flex-col justify-center items-center p-6 text-center space-y-6">
-            <div class="w-24 h-24 bg-cyan-50 text-cyan-custom rounded-3xl flex items-center justify-center text-5xl shadow-lg border border-cyan-100">
-                <i class="fa-solid fa-bolt"></i>
+        <div id="loginSection" class="flex-1 flex flex-col justify-center items-center p-6 text-center space-y-6 bg-gradient-to-b from-sky-50/50 to-white">
+            <div class="w-32 h-32 bg-white rounded-3xl p-2 flex items-center justify-center shadow-xl border border-sky-100 overflow-hidden">
+                <img src="logo.png" alt="TapChat Logo" class="w-full h-full object-contain">
             </div>
             <div>
-                <h2 class="text-2xl font-bold text-gray-800">TapChat में स्वागत है</h2>
-                <p class="text-gray-500 text-sm mt-1">दोस्तों के साथ तुरंत चैट करना शुरू करें</p>
+                <h2 class="text-2xl font-extrabold text-slate-800">TapChat</h2>
+                <p class="text-slate-500 text-xs tracking-wider uppercase mt-1 font-semibold">Real-time Communication</p>
             </div>
-            <button id="googleLoginBtn" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-semibold py-3.5 px-4 rounded-2xl shadow-sm hover:bg-gray-50 transition active:scale-95">
+            <button id="googleLoginBtn" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 font-bold py-3.5 px-4 rounded-2xl shadow-sm hover:bg-slate-50 transition active:scale-95">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
                 गूगल से साइन इन करें
             </button>
@@ -50,27 +46,23 @@
 
         <!-- Main Chat Area -->
         <div id="chatSection" class="hidden flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
-            
-            <!-- User Bar -->
-            <div class="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-3 shadow-sm">
-                <img id="userPhoto" class="w-9 h-9 rounded-full border-2 border-cyan-400 object-cover" src="" alt="User">
+            <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-3 shadow-sm">
+                <img id="userPhoto" class="w-9 h-9 rounded-full border-2 border-sky-500 object-cover" src="" alt="User">
                 <div class="flex flex-col">
-                    <span id="userName" class="text-sm font-bold text-gray-800"></span>
-                    <span class="text-[10px] text-green-500 font-semibold flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> ऑनलाइन
+                    <span id="userName" class="text-sm font-bold text-slate-800"></span>
+                    <span class="text-[10px] text-emerald-500 font-semibold flex items-center gap-1">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> ऑनलाइन
                     </span>
                 </div>
             </div>
 
-            <!-- Messages List -->
             <div id="messagesContainer" class="flex-1 p-4 overflow-y-auto space-y-3">
-                <!-- Messages will appear here -->
+                <!-- Messages -->
             </div>
 
-            <!-- Send Input -->
-            <form id="messageForm" class="p-3 bg-white border-t border-gray-200 flex items-center gap-2">
-                <input id="messageInput" type="text" placeholder="मैसेज लिखें..." required class="flex-1 bg-gray-100 text-sm rounded-full px-4 py-3 outline-none focus:ring-2 focus:ring-cyan-400 border border-gray-200">
-                <button type="submit" class="bg-cyan-custom text-white w-11 h-11 rounded-full flex items-center justify-center hover:opacity-90 active:scale-95 shadow-md">
+            <form id="messageForm" class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                <input id="messageInput" type="text" placeholder="मैसेज टाइप करें..." required class="flex-1 bg-slate-100 text-sm rounded-full px-4 py-3 outline-none focus:ring-2 focus:ring-sky-500 border border-slate-200">
+                <button type="submit" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white w-11 h-11 rounded-full flex items-center justify-center hover:opacity-95 active:scale-95 shadow-md">
                     <i class="fa-solid fa-paper-plane text-sm"></i>
                 </button>
             </form>
@@ -78,7 +70,7 @@
 
     </div>
 
-    <!-- Firebase SDK Imports -->
+    <!-- Firebase Code -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -164,8 +156,8 @@
                     const msgDiv = document.createElement('div');
                     msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
                     msgDiv.innerHTML = `
-                        <span class="text-[10px] text-gray-400 mb-0.5 px-1 font-medium">${data.name}</span>
-                        <div class="max-w-[80%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-cyan-custom text-white rounded-br-none font-medium' : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'}">
+                        <span class="text-[10px] text-slate-400 mb-0.5 px-1 font-medium">${data.name}</span>
+                        <div class="max-w-[80%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-br-none font-medium' : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'}">
                             ${data.text}
                         </div>
                     `;

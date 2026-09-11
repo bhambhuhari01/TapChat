@@ -12,54 +12,65 @@
         .text-cyan-custom { color: #00BCD4; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
 
     <!-- App Container -->
-    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col h-[90vh]">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col h-[92vh]">
         
         <!-- Header -->
         <div class="bg-cyan-custom text-white p-4 flex justify-between items-center shadow-md">
-            <h1 class="text-2xl font-bold tracking-wide flex items-center gap-2">
-                <i class="fa-solid fa-comments"></i> TapChat
-            </h1>
-            <button id="logoutBtn" class="hidden text-xs bg-white text-cyan-600 px-3 py-1.5 rounded-full font-semibold shadow hover:bg-gray-100 transition">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white text-cyan-custom rounded-2xl flex items-center justify-center shadow-md font-extrabold text-xl">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-wide">TapChat</h1>
+                    <p class="text-[10px] text-cyan-100 font-medium">रियल-टाइम चैट ऐप</p>
+                </div>
+            </div>
+            <button id="logoutBtn" class="hidden text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full font-semibold transition border border-white/30">
                 लॉगआउट
             </button>
         </div>
 
         <!-- Login Screen -->
         <div id="loginSection" class="flex-1 flex flex-col justify-center items-center p-6 text-center space-y-6">
-            <div class="w-20 h-20 bg-cyan-100 text-cyan-custom rounded-full flex items-center justify-center text-4xl shadow-inner mb-2">
-                <i class="fa-solid fa-[#00BCD4] fa-paper-plane"></i>
+            <div class="w-24 h-24 bg-cyan-50 text-cyan-custom rounded-3xl flex items-center justify-center text-5xl shadow-lg border border-cyan-100">
+                <i class="fa-solid fa-bolt"></i>
             </div>
             <div>
-                <h2 class="text-2xl font-bold text-gray-800">TapChat में आपका स्वागत है</h2>
-                <p class="text-gray-500 text-sm mt-1">दोस्तों से जुड़ने का एक नया और तेज़ तरीका</p>
+                <h2 class="text-2xl font-bold text-gray-800">TapChat में स्वागत है</h2>
+                <p class="text-gray-500 text-sm mt-1">दोस्तों के साथ तुरंत चैट करना शुरू करें</p>
             </div>
-            <button id="googleLoginBtn" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-xl shadow-sm hover:bg-gray-50 transition active:scale-95">
+            <button id="googleLoginBtn" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-semibold py-3.5 px-4 rounded-2xl shadow-sm hover:bg-gray-50 transition active:scale-95">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                गूगल से लॉगिन करें
+                गूगल से साइन इन करें
             </button>
         </div>
 
-        <!-- Main Chat Area (Hidden before login) -->
-        <div id="chatSection" class="hidden flex-1 flex flex-col justify-between">
+        <!-- Main Chat Area -->
+        <div id="chatSection" class="hidden flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
             
             <!-- User Bar -->
-            <div class="bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center gap-3">
-                <img id="userPhoto" class="w-8 h-8 rounded-full border border-cyan-400" src="" alt="User">
-                <span id="userName" class="text-sm font-semibold text-gray-700"></span>
+            <div class="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-3 shadow-sm">
+                <img id="userPhoto" class="w-9 h-9 rounded-full border-2 border-cyan-400 object-cover" src="" alt="User">
+                <div class="flex flex-col">
+                    <span id="userName" class="text-sm font-bold text-gray-800"></span>
+                    <span class="text-[10px] text-green-500 font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> ऑनलाइन
+                    </span>
+                </div>
             </div>
 
             <!-- Messages List -->
-            <div id="messagesContainer" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50">
+            <div id="messagesContainer" class="flex-1 p-4 overflow-y-auto space-y-3">
                 <!-- Messages will appear here -->
             </div>
 
             <!-- Send Input -->
             <form id="messageForm" class="p-3 bg-white border-t border-gray-200 flex items-center gap-2">
-                <input id="messageInput" type="text" placeholder="मैसेज टाइप करें..." required class="flex-1 bg-gray-100 text-sm rounded-full px-4 py-2.5 outline-none focus:ring-2 focus:ring-cyan-400 border border-gray-200">
-                <button type="submit" class="bg-cyan-custom text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 active:scale-95 shadow">
+                <input id="messageInput" type="text" placeholder="मैसेज लिखें..." required class="flex-1 bg-gray-100 text-sm rounded-full px-4 py-3 outline-none focus:ring-2 focus:ring-cyan-400 border border-gray-200">
+                <button type="submit" class="bg-cyan-custom text-white w-11 h-11 rounded-full flex items-center justify-center hover:opacity-90 active:scale-95 shadow-md">
                     <i class="fa-solid fa-paper-plane text-sm"></i>
                 </button>
             </form>
@@ -67,13 +78,12 @@
 
     </div>
 
-    <!-- Firebase SDK Moduel Imports -->
+    <!-- Firebase SDK Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your Exact Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAtK4US0eTXURt2Uutb9GYif_NclzXfhZM",
             authDomain: "tapchat-official.firebaseapp.com",
@@ -84,13 +94,11 @@
             measurementId: "G-34ZYS900TV"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // UI Elements
         const loginSection = document.getElementById('loginSection');
         const chatSection = document.getElementById('chatSection');
         const googleLoginBtn = document.getElementById('googleLoginBtn');
@@ -101,50 +109,50 @@
         const messageInput = document.getElementById('messageInput');
         const messagesContainer = document.getElementById('messagesContainer');
 
-        // Login Function
         googleLoginBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(error => alert(error.message));
+            signInWithPopup(auth, provider).catch(error => alert("Login Error: " + error.message));
         });
 
-        // Logout Function
         logoutBtn.addEventListener('click', () => {
             signOut(auth);
         });
 
-        // Auth State Observer
         onAuthStateChanged(auth, user => {
             if (user) {
                 loginSection.classList.add('hidden');
                 chatSection.classList.remove('hidden');
+                chatSection.classList.add('flex');
                 logoutBtn.classList.remove('hidden');
-                userName.textContent = user.displayName;
+                userName.textContent = user.displayName || 'यूज़र';
                 userPhoto.src = user.photoURL || 'https://via.placeholder.com/150';
                 loadMessages();
             } else {
                 loginSection.classList.remove('hidden');
                 chatSection.classList.add('hidden');
+                chatSection.classList.remove('flex');
                 logoutBtn.classList.add('hidden');
             }
         });
 
-        // Send Message
         messageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
             if (!text) return;
 
-            await addDoc(collection(db, "messages"), {
-                text: text,
-                uid: auth.currentUser.uid,
-                name: auth.currentUser.displayName,
-                photo: auth.currentUser.photoURL,
-                timestamp: serverTimestamp()
-            });
-
             messageInput.value = '';
+
+            try {
+                await addDoc(collection(db, "messages"), {
+                    text: text,
+                    uid: auth.currentUser.uid,
+                    name: auth.currentUser.displayName || 'अनाम',
+                    timestamp: serverTimestamp()
+                });
+            } catch (err) {
+                console.error("Error sending message: ", err);
+            }
         });
 
-        // Realtime Messages Load
         function loadMessages() {
             const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
             onSnapshot(q, (snapshot) => {
@@ -156,8 +164,8 @@
                     const msgDiv = document.createElement('div');
                     msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
                     msgDiv.innerHTML = `
-                        <span class="text-[10px] text-gray-400 px-1 mb-0.5">${data.name || 'User'}</span>
-                        <div class="max-w-[75%] px-3 py-2 rounded-2xl text-sm ${isMe ? 'bg-cyan-custom text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none shadow-sm'}">
+                        <span class="text-[10px] text-gray-400 mb-0.5 px-1 font-medium">${data.name}</span>
+                        <div class="max-w-[80%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-cyan-custom text-white rounded-br-none font-medium' : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'}">
                             ${data.text}
                         </div>
                     `;

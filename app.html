@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapChat - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-container">
+    <div class="app-header">
+        <div>🐦 TapChat</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button onclick="toggleLang()" class="lang-btn" id="langToggle">हिंदी</button>
+            <span style="font-size: 12px; color: #888; cursor: pointer;" onclick="window.location.href='profile.html'">👤</span>
+        </div>
+    </div>
+
+    <!-- TAB 1: FEEDS / POSTS -->
+    <div id="postsTab" class="tab-content active-tab">
+        <div class="post-card">
+            <div class="post-header">
+                <div class="avatar">T</div>
+                <div>
+                    <b>TapChat Team</b><br>
+                    <small style="color: #888;" id="announcementTag">Official Announcement</small>
+                </div>
+            </div>
+            <p id="welcomePost">Welcome to TapChat! Enjoy trending reels and AI chat support in one place.</p>
+        </div>
+    </div>
+
+    <!-- TAB 2: REELS -->
+    <div id="reelsTab" class="tab-content">
+        <div class="reels-feed" id="reelsContainer">
+            <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#888;" id="reelsLoading">
+                🎥 Loading Reels...
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: STATUS -->
+    <div id="statusTab" class="tab-content">
+        <div style="padding: 20px;">
+            <b style="color: #888;" id="statusHeader">Recent Updates</b>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 15px; cursor: pointer;" onclick="alert('Status feature coming soon!')">
+                <div style="width: 50px; height: 50px; border-radius: 50%; border: 2px dashed #1DA1F2; display: flex; align-items: center; justify-content: center; font-size: 24px;">+</div>
+                <div>
+                    <b id="myStatus">My Status</b><br>
+                    <small style="color:#888;" id="addStatus">Share a new status update</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: AI CHAT -->
+    <div id="chatTab" class="tab-content">
+        <div class="chat-area" id="chatBox">
+            <div class="msg bot-msg" id="aiWelcome">Hello! I am TapChat AI. How can I assist you today?</div>
+        </div>
+        <div class="input-bar">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Type a message...">
+            <button onclick="sendAI()" style="background:#1DA1F2; color:white; border:none; padding:10px 18px; border-radius:20px; font-weight:bold; cursor:pointer;" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <button class="fab-btn" onclick="alert('Upload feature coming soon!')">+</button>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('postsTab', this)">
+            <span class="nav-icon">📰</span>
+            <span id="navFeed">Feed</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('reelsTab', this)">
+            <span class="nav-icon">🎥</span>
+            <span id="navReels">Reels</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('statusTab', this)">
+            <span class="nav-icon">⭕</span>
+            <span id="navStatus">Status</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('chatTab', this)">
+            <span class="nav-icon">🤖</span>
+            <span id="navAI">AI Chat</span>
+        </button>
+    </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
+

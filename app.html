@@ -5,40 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TapChat - Social & AI</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #000000; color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
         .app-container { width: 100%; max-width: 450px; height: 100vh; background: #121212; display: flex; flex-direction: column; position: relative; }
         
-        /* Header */
-        .app-header { background-color: #1DA1F2; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        /* Top Header */
+        .app-header { background-color: #1DA1F2; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10; }
         .logo-area { display: flex; align-items: center; gap: 8px; }
-        .bird-icon { font-size: 22px; }
 
-        /* Main Content Views */
+        /* Content Tabs */
         .tab-content { flex: 1; overflow-y: auto; display: none; position: relative; }
         .active-tab { display: flex; flex-direction: column; }
 
-        /* Bottom Nav Bar */
-        .bottom-nav { display: flex; justify-content: space-around; background: #1e1e1e; padding: 10px 0; border-top: 1px solid #2a2a2a; }
+        /* Bottom Navigation */
+        .bottom-nav { display: flex; justify-content: space-around; background: #1e1e1e; padding: 10px 0; border-top: 1px solid #2a2a2a; z-index: 10; }
         .nav-btn { color: #888; background: none; border: none; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-btn.active { color: #1DA1F2; font-weight: bold; }
         .nav-icon { font-size: 20px; }
 
-        /* Floating Plus Button */
+        /* Floating Upload Button */
         .fab-btn { position: absolute; bottom: 70px; right: 20px; width: 55px; height: 55px; background: #1DA1F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; border: none; box-shadow: 0 4px 10px rgba(29, 161, 242, 0.5); cursor: pointer; z-index: 100; }
 
-        /* Post Card Styling */
+        /* Feed Post Card */
         .post-card { background: #1e1e1e; margin: 10px; padding: 14px; border-radius: 12px; border: 1px solid #2a2a2a; }
         .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .avatar { width: 38px; height: 38px; background: #1DA1F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .post-media { width: 100%; height: 220px; background: #2a2a2a; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; color: #888; }
+        .post-media { width: 100%; height: 200px; background: #2a2a2a; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; color: #888; }
 
-        /* Reels Styling */
-        .reels-container { height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .reel-player { width: 100%; height: 100%; object-fit: cover; }
+        /* Fullscreen Vertical Reels Container */
+        .reels-feed { height: 100%; overflow-y: scroll; snap-type: y mandatory; scroll-behavior: smooth; background: #000; }
+        .reel-box { height: 100%; width: 100%; snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
+        .reel-video { width: 100%; height: 100%; object-fit: cover; }
+        .reel-overlay { position: absolute; bottom: 20px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: flex-end; color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
 
-        /* AI Chat Styling */
+        /* AI Chat UI */
         .chat-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; }
         .user-msg { align-self: flex-end; background: #1DA1F2; color: white; }
@@ -50,32 +51,33 @@
 <body>
 
 <div class="app-container">
-    <!-- Top Header -->
+    <!-- App Header -->
     <div class="app-header">
         <div class="logo-area">
-            <span class="bird-icon">🐦</span>
+            <span>🐦</span>
             <span>TapChat</span>
         </div>
-        <span id="userTag" style="font-size: 12px; opacity: 0.8;">👤 यूज़र</span>
+        <span style="font-size: 12px; opacity: 0.8;">👤 ऑनलाइन</span>
     </div>
 
-    <!-- 1. FEED TAB -->
+    <!-- 1. POSTS TAB -->
     <div id="postsTab" class="tab-content active-tab">
         <div class="post-card">
             <div class="post-header">
                 <div class="avatar">T</div>
-                <div><b>TapChat Official</b><br><small style="color:#888;">2 मिनट पहले</small></div>
+                <div><b>TapChat Official</b><br><small style="color:#888;">अभी-अभी</small></div>
             </div>
-            <p>TapChat के नए सोशल फ़ीड में आपका स्वागत है! 🚀</p>
-            <div class="post-media">📸 ट्रेंडिंग फ़ोटो फ़ीड</div>
+            <p>TapChat सोशल प्लेटफ़ॉर्म पर आपका स्वागत है!</p>
+            <div class="post-media">📸 सोशल मीडिया पोस्ट</div>
         </div>
     </div>
 
-    <!-- 2. REELS TAB -->
+    <!-- 2. REELS TAB (Scrollable Vertical Videos) -->
     <div id="reelsTab" class="tab-content">
-        <div class="reels-container">
-            <div style="font-size: 40px; margin-bottom: 10px;">🎥</div>
-            <p style="color: #aaa;">फुल-स्क्रीन रील्स लोड हो रही हैं...</p>
+        <div class="reels-feed" id="reelsContainer">
+            <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#888;">
+                🎥 रील्स लोड हो रही हैं...
+            </div>
         </div>
     </div>
 
@@ -84,10 +86,8 @@
         <div style="padding: 20px;">
             <b style="color: #888;">हाल के अपडेट्स</b>
             <div style="display: flex; align-items: center; gap: 12px; margin-top: 15px;">
-                <div style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #1DA1F2; padding: 2px;">
-                    <div style="width: 100%; height: 100%; background: #333; border-radius: 50%;"></div>
-                </div>
-                <div><b>आपका स्टेटस</b><br><small style="color:#888;">अपडेट करने के लिए टैप करें</small></div>
+                <div style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #1DA1F2; background: #333;"></div>
+                <div><b>मेरा स्टेटस</b><br><small style="color:#888;">नया फोटो/वीडियो स्टेटस जोड़ें</small></div>
             </div>
         </div>
     </div>
@@ -95,7 +95,7 @@
     <!-- 4. AI CHAT TAB -->
     <div id="chatTab" class="tab-content">
         <div class="chat-area" id="chatBox">
-            <div class="msg bot-msg">नमस्ते! मैं TapChat AI हूँ। मैं आपकी क्या मदद कर सकता हूँ?</div>
+            <div class="msg bot-msg">नमस्ते! मैं TapChat AI हूँ। पूछिए आप क्या जानना चाहते हैं?</div>
         </div>
         <div class="input-bar">
             <input type="text" id="chatInput" class="chat-input" placeholder="मैसेज लिखें...">
@@ -103,10 +103,10 @@
         </div>
     </div>
 
-    <!-- Floating Upload Button -->
-    <button class="fab-btn" onclick="alert('नया पोस्ट या रील अपलोड करें!')">+</button>
+    <!-- Floating Plus Button -->
+    <button class="fab-btn" onclick="alert('अपलोड विकल्प जल्द आ रहा है!')">+</button>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Nav -->
     <div class="bottom-nav">
         <button class="nav-btn active" onclick="switchTab('postsTab', this)">
             <span class="nav-icon">📰</span>
@@ -133,8 +133,45 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active-tab');
         btn.classList.add('active');
+
+        if(tabId === 'reelsTab') {
+            loadReels();
+        }
     }
 
+    // Load Reels from Render Backend
+    async function loadReels() {
+        const container = document.getElementById('reelsContainer');
+        try {
+            const res = await fetch("https://tapchat-backend.onrender.com/api/reels");
+            const data = await res.json();
+            
+            if(data.success && data.reels.length > 0) {
+                container.innerHTML = '';
+                data.reels.forEach(reel => {
+                    container.innerHTML += `
+                        <div class="reel-box">
+                            <video class="reel-video" src="${reel.video_url}" autoplay loop muted playsinline></video>
+                            <div class="reel-overlay">
+                                <div>
+                                    <b>@${reel.user}</b>
+                                    <p style="font-size: 12px; margin-top: 4px;">TapChat Reels 🎵</p>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 24px;">❤️</div>
+                                    <small>${reel.likes}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        } catch(e) {
+            container.innerHTML = `<div style="padding:20px; text-align:center; color:#888;">रील्स लोड करने में समस्या आई।</div>`;
+        }
+    }
+
+    // AI Chat
     async function sendAI() {
         const input = document.getElementById('chatInput');
         const text = input.value.trim();
@@ -151,9 +188,9 @@
                 body: JSON.stringify({ prompt: text })
             });
             const data = await response.json();
-            chatBox.innerHTML += `<div class="msg bot-msg">${data.reply || 'कोई जवाब नहीं मिला'}</div>`;
+            chatBox.innerHTML += `<div class="msg bot-msg">${data.reply || 'उत्तर नहीं मिला'}</div>`;
         } catch(e) {
-            chatBox.innerHTML += `<div class="msg bot-msg">सर्वर से कनेक्शन में समस्या आई।</div>`;
+            chatBox.innerHTML += `<div class="msg bot-msg">सर्वर एरर!</div>`;
         }
         chatBox.scrollTop = chatBox.scrollHeight;
     }

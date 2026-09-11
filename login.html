@@ -61,14 +61,15 @@
 </div>
 
 <script>
-    // Firebase Project Config Keys
+    // Firebase Config Integrated
     const firebaseConfig = {
-        apiKey: "YOUR_FIREBASE_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyAtK4US0eTXURt2Uutb9GYif_NclzXfhZM",
+        authDomain: "tapchat-official.firebaseapp.com",
+        projectId: "tapchat-official",
+        storageBucket: "tapchat-official.firebasestorage.app",
+        messagingSenderId: "664579432894",
+        appId: "1:664579432894:web:dfd69cc0a650bdd13f99ef",
+        measurementId: "G-J7RW4S4481"
     };
 
     if (!firebase.apps.length) {
@@ -86,7 +87,7 @@
     function sendOTP() {
         const phone = document.getElementById("phoneNumber").value.trim();
         if (!phone || phone.length < 10) {
-            alert("कृपया सही मोबाइल नंबर दर्ज करें (जैसे +91 9876543210)");
+            alert("कृपया देश के कोड के साथ सही मोबाइल नंबर दर्ज करें (जैसे +919876543210)");
             return;
         }
 
@@ -108,7 +109,7 @@
 
         confirmationResultGlobal.confirm(code).then((result) => {
             alert("लॉगिन सफल हुआ!");
-            window.location.href = "index.html"; // लॉगिन के बाद मुख्य ऐप पर ले जाएगा
+            window.location.href = "index.html";
         }).catch((error) => {
             alert("गलत OTP! कृपया दोबारा प्रयास करें।");
         });
@@ -118,7 +119,7 @@
         const provider = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithPopup(provider).then((result) => {
             alert("गूगल लॉगिन सफल हुआ!");
-            window.location.href = "index.html"; // लॉगिन के बाद मुख्य ऐप पर ले जाएगा
+            window.location.href = "index.html";
         }).catch((error) => {
             alert("गूगल साइन-इन एरर: " + error.message);
         });
@@ -127,4 +128,3 @@
 
 </body>
 </html>
-

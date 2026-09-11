@@ -53,3 +53,10 @@ function googleLogin() {
         window.location.href = "app.html";
     }).catch((error) => alert("Google Login Error: " + error.message));
 }
+
+function appleLogin() {
+    const provider = new firebase.auth.OAuthProvider('apple.com');
+    firebase.auth().signInWithPopup(provider).then((result) => {
+        window.location.href = "app.html";
+    }).catch((error) => alert("Apple Login Error: " + error.message));
+}

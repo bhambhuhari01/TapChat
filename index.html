@@ -1,77 +1,1168 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapChat - Welcome</title>
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .splash-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-            background: #121212;
-            padding: 20px;
-        }
-        .logo { font-size: 64px; margin-bottom: 10px; }
-        .title { font-size: 28px; font-weight: bold; color: #1DA1F2; margin-bottom: 8px; }
-        .subtitle { color: #888; font-size: 14px; margin-bottom: 40px; }
-        .start-btn {
-            background: #1DA1F2;
-            color: white;
-            border: none;
-            padding: 14px 40px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 80%;
-            max-width: 300px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="app-container">
-    <div style="position: absolute; top: 15px; right: 15px; z-index: 20;">
-        <button onclick="toggleLanguage()" class="lang-btn" id="langBtn">हिंदी</button>
-    </div>
-
-    <div class="splash-screen">
-        <div class="logo.png"
-        <div class="title">TapChat</div>
-        <div class="subtitle" id="subTitle">The New Social Media & AI Experience</div>
-        <button class="start-btn" onclick="window.location.href='login.html'" id="startBtn">Get Started</button>
-    </div>
-</div>
-
-<script>
-    let currentLang = localStorage.getItem('tapchat_lang') || 'en';
-    
-    function updateText() {
-        if(currentLang === 'hi') {
-            document.getElementById('subTitle').innerText = "सोशल मीडिया और AI का नया अनुभव";
-            document.getElementById('startBtn').innerText = "शुरू करें";
-            document.getElementById('langBtn').innerText = "English";
-        } else {
-            document.getElementById('subTitle').innerText = "The New Social Media & AI Experience";
-            document.getElementById('startBtn').innerText = "Get Started";
-            document.getElementById('langBtn').innerText = "हिंदी";
-        }
-    }
-
-    function toggleLanguage() {
-        currentLang = currentLang === 'en' ? 'hi' : 'en';
-        localStorage.setItem('tapchat_lang', currentLang);
-        updateText();
-    }
-
-    updateText();
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TapChat - Bharat's Modern Social Network</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Google Fonts: Outfit & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+​<!-- Firebase SDKs (Compat Version) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+​<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+brand: {
+50: '#f0f3ff',
+100: '#e0e7ff',
+500: '#6366f1',
+600: '#4f46e5',
+700: '#4338ca',
+},
+lightBg: '#f8fafc',
+cardBg: '#ffffff',
+},
+fontFamily: {
+sans: ['Inter', 'sans-serif'],
+heading: ['Outfit', 'sans-serif'],
+}
+}
+}
+}
 </script>
-
+<style>
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.reel-container { scroll-snap-type: y mandatory; }
+.reel-card { scroll-snap-align: start; }
+​.glass-light {
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(16px);
+-webkit-backdrop-filter: blur(16px);
+border: 1px solid rgba(226, 232, 240, 0.9);
+}
+​.active-story-ring {
+background: linear-gradient(45deg, #f59e0b, #ec4899, #6366f1);
+padding: 2px;
+}
+​@keyframes pulse-ring {
+0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+}
+.pulse-live { animation: pulse-ring 2s infinite; }
+</style>
+</head>
+<body class="h-full bg-slate-100 font-sans text-slate-800 antialiased select-none overflow-hidden">
+​<!-- Invisible Recaptcha Container for Firebase Phone Auth -->
+<div id="recaptcha-container"></div>
+​<!-- ================= 1. AUTHENTICATION VIEW OVERLAY ================= -->
+<div id="authView" class="fixed inset-0 z-50 bg-slate-50/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+<div class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200/90 space-y-6">
+​<!-- App Logo & Title Header -->
+<div class="text-center space-y-2 flex flex-col items-center">
+<div class="inline-flex p-1 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-xl shadow-indigo-500/20 mb-1 w-16 h-16 items-center justify-center overflow-hidden">
+<img src="logo.png" alt="TapChat Logo" class="w-full h-full object-cover rounded-xl bg-white" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-comments text-white text-3xl\'></i>';">
+</div>
+<h1 class="font-heading font-extrabold text-3xl text-slate-900 tracking-tight">TapChat</h1>
+<p id="authSubtitle" class="text-xs font-medium text-slate-500">भारत का अपना सबसे सुरक्षित और आधुनिक सोशल नेटवर्क</p>
+</div>
+​<!-- Language Switcher Bar in Auth -->
+<div class="flex items-center justify-center gap-2 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+<button onclick="setLanguage('HI')" id="langBtnHI" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-600 shadow-sm transition">हिंदी</button>
+<button onclick="setLanguage('EN')" id="langBtnEN" class="flex-1 py-1.5 rounded-xl text-xs font-medium text-slate-500 transition">English</button>
+<button onclick="setLanguage('HINGLISH')" id="langBtnHING" class="flex-1 py-1.5 rounded-xl text-xs font-medium text-slate-500 transition">Hinglish</button>
+</div>
+​<!-- LOGIN METHOD TABS -->
+<div class="space-y-4">
+<!-- Phone OTP Login Form -->
+<div id="phoneLoginForm" class="space-y-3">
+<label id="phoneInputLabel" class="text-xs font-semibold text-slate-700 block">मोबाइल नंबर से लॉगिन करें (Phone Login)</label>
+<div class="flex items-center gap-2">
+<span class="bg-slate-100 text-slate-700 px-3.5 py-3 rounded-2xl text-xs font-bold border border-slate-200">+91</span>
+<input type="tel" id="phoneNumber" placeholder="9876543210" class="flex-1 bg-slate-50 text-slate-900 px-4 py-3 rounded-2xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-indigo-600 focus:bg-white transition">
+</div>
+​<button onclick="sendOTP()" id="btnSendOtp" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2">
+<i class="fa-solid fa-paper-plane"></i> <span id="labelSendOtp">OTP भेजें (Get OTP)</span>
+</button>
+​<!-- OTP Verification Box -->
+<div id="otpBox" class="hidden space-y-2 pt-2 border-t border-slate-100">
+<input type="text" id="otpCode" placeholder="Enter 6-digit OTP" class="w-full bg-slate-50 text-slate-900 px-4 py-3 rounded-2xl border border-slate-200 text-xs text-center font-bold tracking-widest focus:outline-none focus:border-indigo-600">
+<button onclick="verifyOTP()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-emerald-600/20 transition">
+<span id="labelVerifyOtp">OTP वेरिफाई करें (Verify OTP)</span>
+</button>
+</div>
+</div>
+​<div class="relative flex items-center my-4">
+<div class="flex-grow border-t border-slate-200"></div>
+<span class="flex-shrink mx-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">या सोशल अकाउंट से लॉगिन करें</span>
+<div class="flex-grow border-t border-slate-200"></div>
+</div>
+​<!-- Google & Apple Social Login Buttons -->
+<div class="space-y-2.5">
+<!-- Google Login Button -->
+<button onclick="googleLogin()" class="w-full py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 text-xs font-bold shadow-sm transition flex items-center justify-center gap-3">
+<svg class="w-4 h-4" viewBox="0 0 24 24">
+<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+</svg>
+<span>Continue with Google</span>
+</button>
+​<!-- Apple ID Login Button -->
+<button onclick="appleLogin()" class="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-2xl text-xs font-bold shadow-md transition flex items-center justify-center gap-3">
+<i class="fa-brands fa-apple text-base"></i>
+<span>Sign in with Apple ID</span>
+</button>
+</div>
+​<!-- Instant Demo Access Button -->
+<div class="pt-2">
+<button onclick="enterDemoMode()" class="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-2xl text-xs font-bold border border-indigo-200 transition flex items-center justify-center gap-2">
+<i class="fa-solid fa-bolt text-amber-500"></i>
+<span id="labelDemoLogin">बिना लॉगिन ऐप देखें (Instant Guest Demo)</span>
+</button>
+</div>
+</div>
+​<p class="text-[10px] text-center text-slate-400">By continuing, you agree to TapChat's Terms & Privacy Policy.</p>
+</div>
+</div>
+​<!-- ================= 2. MAIN APPLICATION SHELL ================= -->
+<div id="appContainer" class="h-full max-w-md w-full mx-auto bg-slate-50 flex flex-col relative shadow-2xl border-x border-slate-200">
+​<!-- Top Navigation Header Bar -->
+<header class="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 flex items-center justify-between px-4">
+<div class="flex items-center gap-2.5">
+<!-- Custom App Logo PNG in Header -->
+<div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-0.5 shadow-md shadow-indigo-500/20 cursor-pointer overflow-hidden flex items-center justify-center" onclick="switchTab('feed')">
+<img src="logo.png" alt="TapChat Logo" class="w-full h-full object-cover rounded-[14px] bg-white" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full bg-white rounded-[14px] flex items-center justify-center\'><i class=\'fa-solid fa-comments text-indigo-600 text-lg\'></i></div>';">
+</div>
+<div>
+<h1 class="font-heading font-extrabold text-xl text-slate-900 tracking-tight flex items-center gap-1.5">
+TapChat
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</h1>
+<p class="text-[10px] font-semibold text-slate-500" id="headerSubText">भारत का अपना सोशल नेटवर्क</p>
+</div>
+</div>
+​<div class="flex items-center gap-2">
+<!-- Multi-language Quick Switch Button -->
+<button onclick="cycleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1 border border-slate-200">
+<i class="fa-solid fa-globe text-indigo-600"></i>
+<span id="currentLangLabel">HI</span>
+</button>
+​<!-- Search Button -->
+<button onclick="openSearchModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition border border-slate-200">
+<i class="fa-solid fa-magnifying-glass text-xs"></i>
+</button>
+​<!-- Settings Drawer Trigger Avatar -->
+<button onclick="toggleProfileDrawer()" class="relative group ml-0.5">
+<img id="userHeaderAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-xl object-cover border-2 border-indigo-500 shadow-sm">
+</button>
+</div>
+</header>
+​<!-- Dynamic Content Body Stream -->
+<main class="flex-1 relative overflow-hidden">
+​<!-- ================= TAB 1: FEED ================= -->
+<section id="view-feed" class="h-full overflow-y-auto hide-scrollbar pb-28 p-3.5 space-y-4">
+​<!-- Category Chips Filter -->
+<div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-0.5">
+<button onclick="filterFeed('foryou')" id="chip-foryou" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+<span class="lbl-foryou">🔥 फ़ॉर यू</span>
+</button>
+<button onclick="filterFeed('following')" id="chip-following" class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+<span class="lbl-following">👥 फ़ॉलोइंग</span>
+</button>
+<button onclick="filterFeed('trending')" id="chip-trending" class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+<span class="lbl-trending">⚡ ट्रेंडिंग भारत</span>
+</button>
+</div>
+​<!-- Story Status Bar -->
+<div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm">
+<div class="flex items-center gap-3.5 overflow-x-auto hide-scrollbar py-0.5">
+<!-- Add Story Button -->
+<div onclick="openNewStatusModal()" class="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0 group">
+<div class="relative w-14 h-14 rounded-2xl border-2 border-dashed border-indigo-500 p-0.5 flex items-center justify-center bg-indigo-50 group-hover:bg-indigo-100 transition">
+<img id="userStoryThumb" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover opacity-70">
+<div class="absolute inset-0 flex items-center justify-center">
+<i class="fa-solid fa-plus bg-indigo-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md"></i>
+</div>
+</div>
+<span class="text-[11px] font-semibold text-slate-700">My Status</span>
+</div>
+​<!-- Dynamic Friends Stories -->
+<div id="feedStoriesList" class="flex items-center gap-3.5">
+<!-- Rendered by JS -->
+</div>
+</div>
+</div>
+​<!-- Create Post Input Trigger Card -->
+<div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm space-y-3">
+<div class="flex items-center gap-3">
+<img id="userCreatePostAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-xl object-cover border border-slate-200">
+<button onclick="openCreatePostModal()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-left px-4 py-2.5 rounded-xl text-slate-400 text-xs font-medium border border-slate-200 transition flex items-center justify-between">
+<span id="txtSharePrompt">नया विचार या फोटो शेयर करें...</span>
+<i class="fa-solid fa-pen-nib text-indigo-600"></i>
+</button>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-600 font-medium">
+<button onclick="openCreatePostModal('photo')" class="flex items-center gap-1.5 hover:text-indigo-600 transition">
+<i class="fa-regular fa-image text-emerald-500 text-sm"></i> Photo
+</button>
+<button onclick="openCreatePostModal('poll')" class="flex items-center gap-1.5 hover:text-indigo-600 transition">
+<i class="fa-solid fa-square-poll-vertical text-purple-500 text-sm"></i> Poll
+</button>
+<button onclick="switchTab('aistudio')" class="flex items-center gap-1.5 text-indigo-600 font-bold hover:text-indigo-700 transition">
+<i class="fa-solid fa-wand-magic-sparkles text-amber-500 animate-bounce"></i> AI Studio
+</button>
+</div>
+</div>
+​<!-- Dynamic Posts Feed Stream -->
+<div id="postsStream" class="space-y-4">
+<!-- Rendered by JS -->
+</div>
+</section>
+​<!-- ================= TAB 2: REELS ================= -->
+<section id="view-reels" class="hidden h-full relative bg-slate-950">
+<div id="reelsContainer" class="h-full overflow-y-scroll reel-container hide-scrollbar">
+<!-- Dynamic Video Reels Rendered by JS -->
+</div>
+</section>
+​<!-- ================= TAB 3: AI STUDIO (GEMINI POWERED) ================= -->
+<section id="view-aistudio" class="hidden h-full flex flex-col overflow-y-auto hide-scrollbar pb-28 p-4 space-y-4">
+​<!-- AI Banner -->
+<div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-amber-300">
+<i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+</div>
+<div>
+<h2 class="font-heading font-extrabold text-lg">TapChat Gemini AI Studio</h2>
+<p class="text-xs text-indigo-100 font-medium">Powered by Google Gemini AI</p>
+</div>
+</div>
+<p class="text-xs text-indigo-100 leading-relaxed" id="aiStudioBannerDesc">
+AI से ऑटो-पोस्ट्स, शायरी, वायरल हैशटैग्स बनाएं या फ़ोटो प्रॉम्ट से सीधा AI इमेज आर्ट जनरेट करें!
+</p>
+</div>
+​<!-- Sub Tab Switcher -->
+<div class="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-sm">
+<button onclick="switchAITab('writer')" id="aiSubTabWriter" class="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">
+✍️ AI Content Writer
+</button>
+<button onclick="switchAITab('image')" id="aiSubTabImage" class="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 transition">
+🎨 AI Image Generator
+</button>
+</div>
+​<!-- AI Text Assistant Panel -->
+<div id="panelAIWriter" class="space-y-3">
+<div class="flex gap-2 overflow-x-auto hide-scrollbar text-xs">
+<button onclick="sendQuickPrompt('Write a catchy Hindi caption for my travel picture')" class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-indigo-600 font-medium shadow-sm hover:bg-slate-50">
+✨ Travel Caption
+</button>
+<button onclick="sendQuickPrompt('Suggest 10 trending hashtags for viral Indian social reels')" class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-purple-600 font-medium shadow-sm hover:bg-slate-50">
+🔥 Viral Hashtags
+</button>
+<button onclick="sendQuickPrompt('Create an energetic good morning quote for status in Hindi')" class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-rose-600 font-medium shadow-sm hover:bg-slate-50">
+☀️ Good Morning Quote
+</button>
+</div>
+​<!-- Chat Log Container -->
+<div class="bg-white rounded-2xl p-3.5 h-64 overflow-y-auto hide-scrollbar space-y-3 border border-slate-200 shadow-sm text-xs" id="aiChatLog">
+<div class="flex gap-2.5 items-start max-w-[85%]">
+<div class="w-7 h-7 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xs flex-shrink-0">
+<i class="fa-solid fa-sparkles"></i>
+</div>
+<div class="bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-xs border border-slate-200 leading-relaxed">
+नमस्ते! मैं आपका TapChat Gemini AI असिस्टेंट हूँ। क्या पोस्ट लिखना या नया विचार पूछना चाहते हैं? 😊
+</div>
+</div>
+</div>
+​<!-- AI Form -->
+<form onsubmit="handleAISubmit(event)" class="flex items-center gap-2">
+<input type="text" id="aiInput" placeholder="Ask AI something... / AI से पूछें..." class="flex-1 bg-white text-slate-900 px-4 py-3 rounded-2xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-indigo-600 shadow-sm">
+<button type="submit" class="w-11 h-11 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-600/30 transition">
+<i class="fa-solid fa-paper-plane text-xs"></i>
+</button>
+</form>
+</div>
+​<!-- AI Image Generator Panel -->
+<div id="panelAIImage" class="hidden space-y-3">
+<div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+<label class="text-xs font-bold text-slate-700 block">Describe your dream photo / फोटो का विवरण लिखें:</label>
+<textarea id="aiImagePrompt" rows="3" placeholder="e.g. A cute 3D rendered baby elephant wearing a royal Indian turban floating on colorful clouds at sunset..." class="w-full bg-slate-50 text-slate-900 p-3 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-600 font-medium"></textarea>
+​<button onclick="generateAIArt()" id="generateImageBtn" class="w-full py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+<i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Photo / फोटो बनाएं
+</button>
+</div>
+​<div id="aiImageResultArea" class="hidden bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+<div class="relative rounded-xl overflow-hidden border border-slate-200">
+<img id="generatedImageDisplay" src="" class="w-full h-64 object-cover">
+<div class="absolute top-2 right-2 px-2.5 py-1 bg-slate-900/80 backdrop-blur-md text-white rounded-lg text-[10px] font-bold">
+Gemini AI Art
+</div>
+</div>
+<button onclick="publishAIImageToFeed()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+<i class="fa-solid fa-share-nodes"></i> Share AI Photo to Feed / फ़ीड में शेयर करें
+</button>
+</div>
+</div>
+​</section>
+​<!-- ================= TAB 4: CHATS & MESSAGES ================= -->
+<section id="view-chats" class="hidden h-full flex flex-col overflow-y-auto hide-scrollbar pb-28 p-4 space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-heading font-extrabold text-lg text-slate-900">Messages / चैट</h2>
+<p class="text-xs text-slate-500">दोस्तों और AI के साथ कनेक्टेड रहें</p>
+</div>
+<button onclick="openSearchModal()" class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm">
+<i class="fa-solid fa-user-plus text-xs"></i>
+</button>
+</div>
+​<!-- Online Active Friends Bar -->
+<div class="flex items-center gap-3 overflow-x-auto hide-scrollbar py-1">
+<div class="flex flex-col items-center gap-1 flex-shrink-0">
+<div class="relative w-12 h-12 rounded-2xl border-2 border-emerald-500 p-0.5">
+<img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover">
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+</div>
+<span class="text-[10px] font-semibold text-slate-700">Rohan</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-shrink-0">
+<div class="relative w-12 h-12 rounded-2xl border-2 border-emerald-500 p-0.5">
+<img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover">
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+</div>
+<span class="text-[10px] font-semibold text-slate-700">Sneha</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-shrink-0">
+<div class="relative w-12 h-12 rounded-2xl border-2 border-emerald-500 p-0.5">
+<img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover">
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+</div>
+<span class="text-[10px] font-semibold text-slate-700">Vikram</span>
+</div>
+</div>
+​<!-- Chat Conversations Stream -->
+<div id="chatsList" class="space-y-2.5">
+<!-- TapChat AI Bot Chat Card -->
+<div onclick="switchTab('aistudio')" class="bg-white hover:bg-slate-50 p-3 rounded-2xl flex items-center gap-3 border border-slate-200/80 shadow-sm cursor-pointer border-l-4 border-l-indigo-600 transition">
+<div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-base flex-shrink-0 shadow-md">
+<i class="fa-solid fa-robot"></i>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-0.5">
+<h4 class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+TapChat AI
+<span class="px-1.5 py-0.2 text-[8px] bg-indigo-100 text-indigo-700 rounded font-bold uppercase">BOT</span>
+</h4>
+<span class="text-[10px] font-semibold text-indigo-600">Online</span>
+</div>
+<p class="text-xs text-slate-500 truncate">I can write post captions or answer questions!</p>
+</div>
+</div>
+​<!-- Direct Messages -->
+<div onclick="openChatDetailModal('Rohan Verma', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80')" class="bg-white hover:bg-slate-50 p-3 rounded-2xl flex items-center gap-3 border border-slate-200/80 shadow-sm cursor-pointer transition">
+<img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" class="w-11 h-11 rounded-xl object-cover border border-slate-200 flex-shrink-0">
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-0.5">
+<h4 class="font-bold text-xs text-slate-900">Rohan Verma</h4>
+<span class="text-[10px] text-slate-400">12:30 PM</span>
+</div>
+<p class="text-xs text-slate-500 truncate flex items-center gap-1">
+<i class="fa-solid fa-microphone text-emerald-500 text-[10px]"></i> Voice Note (0:14)
+</p>
+</div>
+<span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-bold flex items-center justify-center">2</span>
+</div>
+​<div onclick="openChatDetailModal('Sneha Reddy', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80')" class="bg-white hover:bg-slate-50 p-3 rounded-2xl flex items-center gap-3 border border-slate-200/80 shadow-sm cursor-pointer transition">
+<img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80" class="w-11 h-11 rounded-xl object-cover border border-slate-200 flex-shrink-0">
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-0.5">
+<h4 class="font-bold text-xs text-slate-900">Sneha Reddy</h4>
+<span class="text-[10px] text-slate-400">Yesterday</span>
+</div>
+<p class="text-xs text-slate-500 truncate">Bhai, TapChat ka naya white UI mast lag raha hai! 🔥</p>
+</div>
+</div>
+</div>
+</section>
+​<!-- ================= TAB 5: LIVE AUDIO ROOMS ================= -->
+<section id="view-live" class="hidden h-full flex flex-col overflow-y-auto hide-scrollbar pb-28 p-4 space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-heading font-extrabold text-lg text-slate-900 flex items-center gap-2">
+Live Audio Spots <span class="w-2.5 h-2.5 rounded-full bg-rose-500 pulse-live"></span>
+</h2>
+<p class="text-xs text-slate-500">लाइव ऑडियो रूम्स में हिस्सा लें</p>
+</div>
+<button onclick="showToast('Creating Live Audio Room...')" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5">
+<i class="fa-solid fa-microphone"></i> Go Live
+</button>
+</div>
+​<!-- Featured Live Room Card -->
+<div class="bg-white rounded-3xl p-4 border border-rose-200 shadow-md space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<span class="px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wider">
+🔴 LIVE NOW
+</span>
+<h3 class="font-heading font-bold text-sm text-slate-900 mt-2">Chai & Tech Discussion India ☕💻</h3>
+<p class="text-xs text-slate-500">Host: @aashish_tech • 420 Listening</p>
+</div>
+<button onclick="joinLiveRoom()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md transition">
+Join Room
+</button>
+</div>
+​<!-- Speakers Stage Grid -->
+<div class="grid grid-cols-4 gap-2 pt-3 border-t border-slate-100">
+<div class="flex flex-col items-center gap-1">
+<div class="relative w-12 h-12 rounded-2xl border-2 border-rose-500 p-0.5">
+<img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover">
+<span class="absolute -bottom-1 -right-1 bg-rose-600 text-white rounded-full text-[8px] w-4 h-4 flex items-center justify-center"><i class="fa-solid fa-microphone"></i></span>
+</div>
+<span class="text-[10px] font-semibold text-slate-700 truncate w-14 text-center">Aashish</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="relative w-12 h-12 rounded-2xl border border-slate-200 p-0.5">
+<img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover">
+</div>
+<span class="text-[10px] text-slate-600 truncate w-14 text-center">Rohan</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="relative w-12 h-12 rounded-2xl border border-slate-200 p-0.5">
+<img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80" class="w-full h-full rounded-xl object-cover">
+</div>
+<span class="text-[10px] text-slate-600 truncate w-14 text-center">Sneha</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 text-xs font-bold">
++417
+</div>
+<span class="text-[10px] text-slate-400">Audience</span>
+</div>
+</div>
+​<!-- Virtual Gift Reaction Bar -->
+<div class="flex items-center justify-around pt-2 border-t border-slate-100 text-xs">
+<button onclick="sendVirtualGift('☕ Chai')" class="flex items-center gap-1 text-slate-700 hover:text-indigo-600 font-bold bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 transition">
+☕ Chai
+</button>
+<button onclick="sendVirtualGift('🥟 Samosa')" class="flex items-center gap-1 text-slate-700 hover:text-indigo-600 font-bold bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 transition">
+🥟 Samosa
+</button>
+<button onclick="sendVirtualGift('❤️ Dil')" class="flex items-center gap-1 text-rose-600 font-bold bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 transition">
+❤️ Dil
+</button>
+</div>
+</div>
+</section>
+​</main>
+​<!-- Floating Bottom Dock Navigation -->
+<nav class="fixed bottom-3 left-0 right-0 z-40 max-w-md mx-auto px-4">
+<div class="bg-white/95 backdrop-blur-md rounded-2xl p-2 flex justify-around items-center border border-slate-200/80 shadow-2xl">
+<button onclick="switchTab('feed')" id="nav-feed" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-indigo-600 font-bold transition">
+<i class="fa-solid fa-house text-base"></i>
+<span class="text-[10px] lbl-tab-feed">Feed</span>
+</button>
+​<button onclick="switchTab('reels')" id="nav-reels" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-600 transition">
+<i class="fa-solid fa-clapperboard text-base"></i>
+<span class="text-[10px] lbl-tab-reels">Reels</span>
+</button>
+​<button onclick="switchTab('aistudio')" id="nav-aistudio" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-amber-500 hover:text-amber-600 transition relative">
+<span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+<i class="fa-solid fa-wand-magic-sparkles text-base"></i>
+<span class="text-[10px] lbl-tab-ai">AI Studio</span>
+</button>
+​<button onclick="switchTab('chats')" id="nav-chats" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-600 transition relative">
+<span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-emerald-500"></span>
+<i class="fa-solid fa-paper-plane text-base"></i>
+<span class="text-[10px] lbl-tab-chats">Chats</span>
+</button>
+​<button onclick="switchTab('live')" id="nav-live" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-600 transition">
+<i class="fa-solid fa-podcast text-base"></i>
+<span class="text-[10px] lbl-tab-live">Live</span>
+</button>
+</div>
+</nav>
+​<!-- ================= 3. SLIDE-OVER USER PROFILE & SETTINGS DRAWER ================= -->
+<div id="profileDrawer" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end transition-opacity">
+<div class="w-80 bg-white h-full p-5 flex flex-col justify-between border-l border-slate-200 shadow-2xl overflow-y-auto">
+<div class="space-y-5">
+<!-- Drawer Header -->
+<div class="flex items-center justify-between border-b border-slate-100 pb-3">
+<h3 class="font-heading font-bold text-slate-900 text-sm">Account & Settings</h3>
+<button onclick="toggleProfileDrawer()" class="text-slate-400 hover:text-slate-700 text-base"><i class="fa-solid fa-xmark"></i></button>
+</div>
+​<!-- User Profile Card -->
+<div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+<div class="relative">
+<img id="drawerUserImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-14 h-14 rounded-2xl object-cover border-2 border-indigo-500">
+<button onclick="showToast('Profile photo update option')" class="absolute -bottom-1 -right-1 bg-indigo-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-md"><i class="fa-solid fa-camera"></i></button>
+</div>
+<div>
+<h4 id="drawerUserName" class="font-bold text-slate-900 text-sm">Aarav Sharma</h4>
+<p id="drawerUserPhone" class="text-xs text-slate-500">+91 9876543210</p>
+<span class="inline-block mt-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] rounded-full font-bold">Verified Member</span>
+</div>
+</div>
+​<!-- App Settings Options -->
+<div class="space-y-2 text-xs">
+<p class="font-bold text-slate-400 uppercase tracking-wider text-[10px] px-1">Settings / सेटिंग्स</p>
+​<!-- Notifications Toggle -->
+<div class="p-3 bg-white border border-slate-200 rounded-xl flex justify-between items-center">
+<span class="font-semibold text-slate-700 flex items-center gap-2"><i class="fa-regular fa-bell text-indigo-600"></i> Push Notifications</span>
+<input type="checkbox" checked class="w-4 h-4 accent-indigo-600 rounded">
+</div>
+​<!-- Language Selector -->
+<div class="p-3 bg-white border border-slate-200 rounded-xl flex justify-between items-center">
+<span class="font-semibold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-globe text-indigo-600"></i> App Language</span>
+<button onclick="cycleLanguage()" id="drawerLangBtn" class="text-xs font-bold text-indigo-600">Hindi / हिंदी</button>
+</div>
+​<!-- Account Privacy -->
+<div class="p-3 bg-white border border-slate-200 rounded-xl flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="showToast('Privacy Settings Active')">
+<span class="font-semibold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-lock text-indigo-600"></i> Privacy & Security</span>
+<i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>
+</div>
+​<!-- Help & Support -->
+<div class="p-3 bg-white border border-slate-200 rounded-xl flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="showToast('Support Chat Opening...')">
+<span class="font-semibold text-slate-700 flex items-center gap-2"><i class="fa-regular fa-circle-question text-indigo-600"></i> Help & Feedback</span>
+<i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>
+</div>
+</div>
+</div>
+​<button onclick="handleUserLogout()" class="w-full py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl border border-rose-200 text-xs font-bold transition flex items-center justify-center gap-2 mt-4">
+<i class="fa-solid fa-right-from-bracket"></i> Logout / लॉगआउट करें
+</button>
+</div>
+</div>
+​<!-- CREATE POST MODAL -->
+<div id="createPostModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+<div class="bg-white w-full max-w-sm rounded-3xl p-5 border border-slate-200 shadow-2xl space-y-4">
+<div class="flex justify-between items-center border-b border-slate-100 pb-3">
+<h3 class="font-heading font-bold text-sm text-slate-900">Create New Post / नई पोस्ट</h3>
+<button onclick="closeCreatePostModal()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<textarea id="postInputText" rows="4" placeholder="What's on your mind? / कुछ नया शेयर करें..." class="w-full bg-slate-50 text-xs text-slate-900 p-3 rounded-2xl border border-slate-200 focus:outline-none focus:border-indigo-600 font-medium"></textarea>
+​<div id="imageUploadArea" class="hidden space-y-2">
+<input type="text" id="postImageUrl" placeholder="Paste Image URL (Optional)..." class="w-full bg-slate-50 text-xs p-3 rounded-xl border border-slate-200 text-slate-800 font-medium">
+</div>
+​<div class="flex items-center justify-between pt-2">
+<button onclick="toggleImageInput()" class="text-xs text-indigo-600 font-semibold hover:underline flex items-center gap-1.5">
+<i class="fa-regular fa-image"></i> Add Image Link
+</button>
+<button onclick="submitNewPost()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition">
+Publish / पोस्ट करें
+</button>
+</div>
+</div>
+</div>
+​<!-- SEARCH OVERLAY MODAL -->
+<div id="searchModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4">
+<div class="max-w-md mx-auto bg-white rounded-3xl p-4 border border-slate-200 shadow-2xl space-y-3">
+<div class="flex items-center gap-2 bg-slate-50 px-3 py-2.5 rounded-2xl border border-slate-200">
+<i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+<input type="text" placeholder="Search creators, hashtags, posts..." class="bg-transparent text-xs text-slate-800 w-full focus:outline-none font-medium">
+<button onclick="closeSearchModal()" class="text-slate-400 hover:text-slate-700 text-xs">Cancel</button>
+</div>
+<p class="text-xs font-bold text-slate-400 px-1">Trending Tags:</p>
+<div class="flex flex-wrap gap-2 text-xs">
+<span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200 font-medium">#TapChatAI</span>
+<span class="px-3 py-1 bg-purple-50 text-purple-700 rounded-full border border-purple-200 font-medium">#ViralBharat</span>
+<span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 font-medium">#TechNews</span>
+</div>
+</div>
+</div>
+​<!-- DIRECT CHAT CONVERSATION DETAIL MODAL -->
+<div id="chatDetailModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2">
+<div class="bg-white w-full max-w-md h-[90vh] rounded-3xl flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+<!-- Chat Detail Header -->
+<div class="p-3 bg-white border-b border-slate-200 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<button onclick="closeChatDetailModal()" class="text-slate-500 hover:text-slate-800 p-1"><i class="fa-solid fa-arrow-left"></i></button>
+<img id="activeChatAvatar" src="" class="w-9 h-9 rounded-xl object-cover border border-slate-200">
+<div>
+<h4 id="activeChatName" class="font-bold text-xs text-slate-900">User</h4>
+<span class="text-[10px] text-emerald-600 font-bold">Active now</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button onclick="showToast('Calling...')" class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600"><i class="fa-solid fa-phone text-xs"></i></button>
+<button onclick="showToast('Video Calling...')" class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600"><i class="fa-solid fa-video text-xs"></i></button>
+</div>
+</div>
+​<!-- Active Chat Messages Stream -->
+<div id="chatMessagesBox" class="flex-1 p-4 overflow-y-auto hide-scrollbar space-y-3 bg-slate-50 text-xs">
+<!-- Dynamic Messages -->
+</div>
+​<!-- Chat Input Form -->
+<form onsubmit="handleSendDirectMessage(event)" class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+<input type="text" id="directMessageInput" placeholder="Type a message..." class="flex-1 bg-slate-50 text-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-indigo-600">
+<button type="submit" class="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center text-xs shadow-md">
+<i class="fa-solid fa-paper-plane"></i>
+</button>
+</form>
+</div>
+</div>
+​<!-- TOAST NOTIFICATION -->
+<div id="toastNotification" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-semibold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2">
+<i class="fa-solid fa-circle-check text-amber-400"></i> <span id="toastText">Notification</span>
+</div>
+​</div>
+​<!-- ================= 4. COMPLETE INLINED JAVASCRIPT & FIREBASE LOGIC ================= -->
+<script>
+// --- FIREBASE CONFIGURATION ---
+const firebaseConfig = {
+apiKey: "AIzaSyAtK4US0eTXURt2Uutb9GYif_NclzXfhZM",
+authDomain: "tapchat-official.firebaseapp.com",
+projectId: "tapchat-official",
+storageBucket: "tapchat-official.firebasestorage.app",
+messagingSenderId: "664579432894",
+appId: "1:664579432894:web:5e4af6d651b65b693f99ef",
+measurementId: "G-C6C3GJENKN"
+};
+​if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+firebase.initializeApp(firebaseConfig);
+}
+​function getRecaptchaVerifier() {
+if (!window.recaptchaVerifier) {
+window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+'size': 'invisible',
+'callback': (response) => {}
+});
+}
+return window.recaptchaVerifier;
+}
+​// --- AUTHENTICATION FUNCTIONS ---
+function sendOTP() {
+const phoneInput = document.getElementById('phoneNumber');
+if (!phoneInput) return;
+​let phoneNumber = phoneInput.value.trim();
+if (!phoneNumber) {
+alert("कृपया मोबाइल नंबर दर्ज करें (Enter Phone Number)");
+return;
+}
+​if (!phoneNumber.startsWith('+')) {
+phoneNumber = '+91' + phoneNumber;
+}
+​const appVerifier = getRecaptchaVerifier();
+const btnSend = document.getElementById('btnSendOtp');
+if(btnSend) btnSend.innerText = "OTP भेज रहे हैं...";
+​firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+.then((confirmationResult) => {
+window.confirmationResult = confirmationResult;
+document.getElementById('otpBox').classList.remove('hidden');
+if(btnSend) btnSend.innerText = "OTP दोबारा भेजें";
+showToast('OTP सफलतापूर्वक भेज दिया गया है!');
+})
+.catch((error) => {
+console.error("OTP Error:", error);
+if(btnSend) btnSend.innerText = "OTP भेजें (Get OTP)";
+alert("OTP Error: " + error.message);
+});
+}
+​function verifyOTP() {
+const codeInput = document.getElementById('otpCode');
+if (!codeInput) return;
+​const code = codeInput.value.trim();
+if (!code) {
+alert("कृपया 6-अंकों का OTP दर्ज करें");
+return;
+}
+​if (!window.confirmationResult) {
+alert("पहले OTP भेजें!");
+return;
+}
+​window.confirmationResult.confirm(code)
+.then((result) => {
+showToast('सफलतापूर्वक लॉगिन हो गया!');
+document.getElementById('authView').classList.add('hidden');
+})
+.catch((error) => {
+alert('गलत OTP या त्रुटि: ' + error.message);
+});
+}
+​function googleLogin() {
+const provider = new firebase.auth.GoogleAuthProvider();
+firebase.auth().signInWithPopup(provider)
+.then((result) => {
+showToast("Google से सफलतापूर्वक लॉगिन हुआ!");
+document.getElementById('authView').classList.add('hidden');
+})
+.catch((error) => {
+console.error("Google Login Error:", error);
+alert("Google Login Error: " + error.message);
+});
+}
+​function appleLogin() {
+const provider = new firebase.auth.OAuthProvider('apple.com');
+firebase.auth().signInWithPopup(provider)
+.then((result) => {
+showToast("Apple ID से सफलतापूर्वक लॉगिन हुआ!");
+document.getElementById('authView').classList.add('hidden');
+})
+.catch((error) => {
+console.error("Apple Login Error:", error);
+alert("Apple Login Error: " + error.message);
+});
+}
+​function enterDemoMode() {
+document.getElementById('authView').classList.add('hidden');
+showToast('Welcome to TapChat Guest Demo! 🎉');
+}
+​// --- APP STATE & DICTIONARIES ---
+let currentLang = 'HI';
+const i18n = {
+HI: {
+headerSub: 'भारत का अपना सोशल नेटवर्क',
+sharePrompt: 'नया विचार या फोटो शेयर करें...',
+foryou: '🔥 फ़ॉर यू',
+following: '👥 फ़ॉलोइंग',
+trending: '⚡ ट्रेंडिंग भारत',
+},
+EN: {
+headerSub: "India's Own Social Network",
+sharePrompt: 'Share an idea or photo...',
+foryou: '🔥 For You',
+following: '👥 Following',
+trending: '⚡ Trending Bharat',
+},
+HINGLISH: {
+headerSub: "Bharat ka Apna Social Network",
+sharePrompt: "Naya post share karein...",
+foryou: '🔥 For You',
+following: '👥 Following',
+trending: '⚡ Trending',
+}
+};
+​let currentUser = {
+name: "Aarav Sharma",
+phone: "+91 9876543210",
+avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
+};
+​let postsData = [
+{
+id: 1,
+author: "Priya Patel",
+avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
+time: "2h ago",
+content: "Beautiful morning sunrise from Manali! 🌄✨ TapChat ke naye White UI ke saath caption try kiya!",
+image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+likes: 342,
+comments: 28,
+isLiked: false,
+isSaved: false
+},
+{
+id: 2,
+author: "TapChat AI Studio",
+avatar: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=120&q=80",
+time: "5h ago",
+content: "TapChat clean white mode is now live! 🎨 Try generating custom AI Art or chatting with Gemini AI inside AI Studio tab.",
+image: null,
+likes: 820,
+comments: 112,
+isLiked: true,
+isSaved: true
+}
+];
+​let statusData = [
+{ id: 1, name: "Rohan Verma", time: "15m ago", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" },
+{ id: 2, name: "Sneha Reddy", time: "1h ago", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80" }
+];
+​let reelsData = [
+{
+id: 1,
+user: "@rohan_fitness",
+caption: "Morning energy workout 💪 #Motivation #TapChat",
+videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-man-runs-on-the-beach-at-sunset-41224-large.mp4",
+likes: "24.2K",
+comments: "840"
+},
+{
+id: 2,
+user: "@nature_vibes",
+caption: "Serene raindrops on leaves 🌧️🍃 #Bharat",
+videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-rain-falling-on-the-water-of-a-lake-17311-large.mp4",
+likes: "61.8K",
+comments: "1.2K"
+}
+];
+​// --- INIT & AUTH OBSERVER ---
+window.onload = function() {
+renderPosts();
+renderStories();
+renderReels();
+​if (typeof firebase !== 'undefined' && firebase.auth) {
+firebase.auth().onAuthStateChanged((user) => {
+if (user) {
+document.getElementById('authView').classList.add('hidden');
+currentUser.name = user.displayName || user.phoneNumber || "TapChat User";
+currentUser.phone = user.phoneNumber || user.email || "+91 9876543210";
+if(user.photoURL) currentUser.avatar = user.photoURL;
+​document.getElementById('drawerUserName').textContent = currentUser.name;
+document.getElementById('drawerUserPhone').textContent = currentUser.phone;
+if(user.photoURL) {
+document.getElementById('userHeaderAvatar').src = currentUser.avatar;
+document.getElementById('drawerUserImg').src = currentUser.avatar;
+document.getElementById('userStoryThumb').src = currentUser.avatar;
+document.getElementById('userCreatePostAvatar').src = currentUser.avatar;
+}
+} else {
+document.getElementById('authView').classList.remove('hidden');
+}
+});
+}
+};
+​// --- LANGUAGE SWITCHER ---
+function cycleLanguage() {
+if (currentLang === 'HI') currentLang = 'EN';
+else if (currentLang === 'EN') currentLang = 'HINGLISH';
+else currentLang = 'HI';
+setLanguage(currentLang);
+}
+​function setLanguage(lang) {
+currentLang = lang;
+document.getElementById('currentLangLabel').textContent = lang;
+document.getElementById('headerSubText').textContent = i18n[lang].headerSub;
+document.getElementById('txtSharePrompt').textContent = i18n[lang].sharePrompt;
+document.getElementById('drawerLangBtn').textContent = lang;
+​['HI', 'EN', 'HING'].forEach(l => {
+const btn = document.getElementById(langBtn${l});
+if(btn) {
+if (l === (lang === 'HINGLISH' ? 'HING' : lang)) {
+btn.className = "flex-1 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-600 shadow-sm transition";
+} else {
+btn.className = "flex-1 py-1.5 rounded-xl text-xs font-medium text-slate-500 transition";
+}
+}
+});
+showToast(Language switched to ${lang});
+}
+​// --- TAB SWITCHER ---
+function switchTab(tab) {
+const tabs = ['feed', 'reels', 'aistudio', 'chats', 'live'];
+tabs.forEach(t => {
+const el = document.getElementById(view-${t});
+const btn = document.getElementById(nav-${t});
+if (t === tab) {
+el.classList.remove('hidden');
+btn.classList.add('text-indigo-600', 'font-bold');
+btn.classList.remove('text-slate-400');
+} else {
+el.classList.add('hidden');
+btn.classList.remove('text-indigo-600', 'font-bold');
+btn.classList.add('text-slate-400');
+}
+});
+}
+​// --- FEED RENDERING ---
+function renderPosts() {
+const container = document.getElementById('postsStream');
+container.innerHTML = postsData.map(post => `
+<div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="${post.avatar}" class="w-9 h-9 rounded-xl object-cover border border-slate-200">
+<div>
+<h4 class="font-bold text-xs text-slate-900">{post.author}</h4>
+<p class="text-[10px] text-slate-400">{post.time}</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-ellipsis"></i></button>
+</div>
+​<p class="text-xs text-slate-700 leading-relaxed">${post.content}</p>
+​${post.image ? <img src="${post.image}" class="w-full h-56 object-cover rounded-xl border border-slate-100"> : ''}
+​<div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
+<button onclick="toggleLike(${post.id})" class="flex items-center gap-1.5 ${post.isLiked ? 'text-rose-500 font-bold' : 'hover:text-slate-800'} transition">
+<i class="${post.isLiked ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i> <span>{post.likes}</span>
+</button>
+<button onclick="showToast('Comments Panel')" class="flex items-center gap-1.5 hover:text-slate-800 transition">
+<i class="fa-regular fa-comment text-sm"></i> <span>{post.comments}</span>
+</button>
+<button onclick="sharePost(${post.id})" class="flex items-center gap-1.5 hover:text-slate-800 transition">
+<i class="fa-regular fa-paper-plane text-sm"></i> Share
+</button>
+<button onclick="toggleSave(${post.id})" class="${post.isSaved ? 'text-indigo-600' : 'hover:text-slate-800'} transition">
+<i class="${post.isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark text-sm"></i>
+</button>
+</div>
+</div>
+`).join('');
+}
+​function toggleLike(id) {
+const post = postsData.find(p => p.id === id);
+if (post) {
+post.isLiked = !post.isLiked;
+post.likes += post.isLiked ? 1 : -1;
+renderPosts();
+}
+}
+​function toggleSave(id) {
+const post = postsData.find(p => p.id === id);
+if (post) {
+post.isSaved = !post.isSaved;
+showToast(post.isSaved ? 'Saved to bookmarks!' : 'Removed from saved');
+renderPosts();
+}
+}
+​function sharePost(id) {
+showToast('Post link copied to clipboard!');
+}
+​function renderStories() {
+const container = document.getElementById('feedStoriesList');
+container.innerHTML = statusData.map(s => <div onclick="showToast('Viewing ${s.name}\\'s status')" class="flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0 group"> <div class="w-14 h-14 rounded-2xl active-story-ring p-0.5"> <img src="${s.avatar}" class="w-full h-full rounded-xl object-cover border border-white"> </div> <span class="text-[11px] font-semibold text-slate-700 max-w-[60px] truncate">${s.name.split(' ')[0]}</span> </div>).join('');
+}
+​function renderReels() {
+const container = document.getElementById('reelsContainer');
+container.innerHTML = reelsData.map(r => `
+<div class="reel-card h-full w-full relative flex items-center justify-center bg-black">
+<video src="${r.videoUrl}" loop autoplay muted playsinline class="w-full h-full object-cover"></video>
+​<div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80 p-5 flex flex-col justify-between">
+<div class="flex justify-between items-center text-white">
+<span class="font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-circle-play text-rose-500"></i> TapChat Reel</span>
+<button onclick="toggleVideoMute(this)" class="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20"><i class="fa-solid fa-volume-xmark"></i></button>
+</div>
+​<div class="flex items-end justify-between mb-16">
+<div class="space-y-2 text-white max-w-[80%]">
+<h4 class="font-bold text-sm">{r.user}</h4>
+<p class="text-xs text-slate-200">{r.caption}</p>
+</div>
+​<div class="flex flex-col items-center gap-5 text-white">
+<button onclick="showToast('Liked Reel! ❤️')" class="flex flex-col items-center">
+<i class="fa-solid fa-heart text-2xl text-rose-500"></i>
+<span class="text-[10px] mt-1">{r.likes}</span>
+</button>
+<button onclick="showToast('Reels Comments')" class="flex flex-col items-center">
+<i class="fa-solid fa-comment-dots text-2xl"></i>
+<span class="text-[10px] mt-1">{r.comments}</span>
+</button>
+<button onclick="sharePost(1)" class="flex flex-col items-center">
+<i class="fa-solid fa-paper-plane text-2xl"></i>
+<span class="text-[10px] mt-1">Share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+`).join('');
+}
+​function toggleVideoMute(btn) {
+const video = btn.closest('.reel-card').querySelector('video');
+if (video) {
+video.muted = !video.muted;
+btn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+}
+}
+​// --- GEMINI AI STUDIO FUNCTIONS ---
+function switchAITab(tab) {
+const wBtn = document.getElementById('aiSubTabWriter');
+const iBtn = document.getElementById('aiSubTabImage');
+const wPanel = document.getElementById('panelAIWriter');
+const iPanel = document.getElementById('panelAIImage');
+​if(tab === 'writer') {
+wBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition";
+iBtn.className = "flex-1 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 transition";
+wPanel.classList.remove('hidden');
+iPanel.classList.add('hidden');
+} else {
+iBtn.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white transition";
+wBtn.className = "flex-1 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 transition";
+iPanel.classList.remove('hidden');
+wPanel.classList.add('hidden');
+}
+}
+​async function handleAISubmit(e) {
+e.preventDefault();
+const input = document.getElementById('aiInput');
+const text = input.value.trim();
+if (!text) return;
+​appendChatMessage('user', text);
+input.value = '';
+​const typingId = appendChatMessage('ai', 'Thinking... / सोच रहा हूँ... ✨');
+​try {
+const apiKey = "";
+const apiUrl = https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey};
+​const response = await fetch(apiUrl, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+contents: [{ parts: [{ text: text }] }],
+systemInstruction: { parts: [{ text: "You are TapChat AI, a warm bilingual Indian social media assistant. Respond in short, concise Hinglish or Hindi." }] }
+})
+});
+​const data = await response.json();
+const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "माफ़ कीजिये, पुनः प्रयास करें!";
+​document.getElementById(typingId).remove();
+appendChatMessage('ai', reply);
+​} catch (err) {
+document.getElementById(typingId).remove();
+appendChatMessage('ai', "नमस्ते! कृपया थोड़ी देर में पुनः प्रयास करें। 😊");
+}
+}
+​async function generateAIArt() {
+const prompt = document.getElementById('aiImagePrompt').value.trim();
+if(!prompt) return showToast('कृपया फोटो का विवरण लिखें!');
+​const btn = document.getElementById('generateImageBtn');
+btn.disabled = true;
+btn.innerHTML = <i class="fa-solid fa-spinner animate-spin"></i> Generating AI Photo...;
+​try {
+const apiKey = "";
+const apiUrl = https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent?key=${apiKey};
+​const payload = {
+contents: [{ parts: [{ text: prompt }] }],
+generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+};
+​const response = await fetch(apiUrl, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(payload)
+});
+​const result = await response.json();
+const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+​if (base64Data) {
+const imgUrl = data:image/png;base64,${base64Data};
+document.getElementById('generatedImageDisplay').src = imgUrl;
+document.getElementById('aiImageResultArea').classList.remove('hidden');
+showToast('✨ AI Photo Generated!');
+} else {
+showToast('Unable to generate image, try another prompt!');
+}
+} catch(err) {
+showToast('AI Image Error. Try again!');
+} finally {
+btn.disabled = false;
+btn.innerHTML = <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Photo / फोटो बनाएं;
+}
+}
+​function publishAIImageToFeed() {
+const imgUrl = document.getElementById('generatedImageDisplay').src;
+const prompt = document.getElementById('aiImagePrompt').value.trim();
+​postsData.unshift({
+id: Date.now(),
+author: currentUser.name + " (via Gemini AI)",
+avatar: currentUser.avatar,
+time: "Just now",
+content: ✨ Created with TapChat Gemini AI: "${prompt}",
+image: imgUrl,
+likes: 1,
+comments: 0,
+isLiked: true,
+isSaved: false
+});
+​switchTab('feed');
+renderPosts();
+showToast('AI Photo shared to feed!');
+}
+​function sendQuickPrompt(promptText) {
+document.getElementById('aiInput').value = promptText;
+handleAISubmit(new Event('submit'));
+}
+​function appendChatMessage(sender, message) {
+const log = document.getElementById('aiChatLog');
+const msgId = 'msg-' + Date.now();
+const isUser = sender === 'user';
+​const html = <div id="${msgId}" class="flex gap-2.5 items-start ${isUser ? 'justify-end' : ''} max-w-[88%] ${isUser ? 'ml-auto' : ''}"> ${!isUser ?<div class="w-7 h-7 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xs flex-shrink-0"><i class="fa-solid fa-sparkles"></i></div>: ''} <div class="${isUser ? 'bg-indigo-600 text-white rounded-tr-xs' : 'bg-slate-100 text-slate-800 rounded-tl-xs'} p-3 rounded-2xl border border-slate-200 leading-relaxed text-xs"> ${message.replace(/\n/g, '<br>')} </div> </div>;
+log.insertAdjacentHTML('beforeend', html);
+log.scrollTop = log.scrollHeight;
+return msgId;
+}
+​// --- CHAT CONVERSATION DETAIL MODAL ---
+function openChatDetailModal(name, avatar) {
+document.getElementById('activeChatName').textContent = name;
+document.getElementById('activeChatAvatar').src = avatar;
+​const box = document.getElementById('chatMessagesBox');
+box.innerHTML = <div class="flex gap-2 items-start max-w-[80%]"> <img src="${avatar}" class="w-6 h-6 rounded-lg object-cover"> <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm text-slate-800"> Hey! TapChat pe Swagat hai! Kaise ho? 👋 </div> </div>;
+​document.getElementById('chatDetailModal').classList.remove('hidden');
+}
+​function closeChatDetailModal() {
+document.getElementById('chatDetailModal').classList.add('hidden');
+}
+​function handleSendDirectMessage(e) {
+e.preventDefault();
+const input = document.getElementById('directMessageInput');
+const text = input.value.trim();
+if(!text) return;
+​const box = document.getElementById('chatMessagesBox');
+box.insertAdjacentHTML('beforeend', <div class="flex gap-2 items-start justify-end max-w-[80%] ml-auto"> <div class="bg-indigo-600 text-white p-3 rounded-2xl shadow-sm"> ${text} </div> </div>);
+input.value = '';
+box.scrollTop = box.scrollHeight;
+}
+​// --- DRAWER & MODAL TOGGLES ---
+function toggleProfileDrawer() {
+document.getElementById('profileDrawer').classList.toggle('hidden');
+}
+​function openCreatePostModal(type) {
+document.getElementById('createPostModal').classList.remove('hidden');
+if (type === 'photo') toggleImageInput();
+}
+​function closeCreatePostModal() {
+document.getElementById('createPostModal').classList.add('hidden');
+}
+​function toggleImageInput() {
+document.getElementById('imageUploadArea').classList.toggle('hidden');
+}
+​function submitNewPost() {
+const text = document.getElementById('postInputText').value.trim();
+const img = document.getElementById('postImageUrl').value.trim();
+if (!text) return;
+​postsData.unshift({
+id: Date.now(),
+author: currentUser.name,
+avatar: currentUser.avatar,
+time: "Just now",
+content: text,
+image: img || null,
+likes: 1,
+comments: 0,
+isLiked: true,
+isSaved: false
+});
+​closeCreatePostModal();
+document.getElementById('postInputText').value = '';
+document.getElementById('postImageUrl').value = '';
+showToast('Post Published!');
+renderPosts();
+}
+​function openNewStatusModal() {
+showToast('Status Upload Option Active!');
+}
+​function openSearchModal() {
+document.getElementById('searchModal').classList.remove('hidden');
+}
+​function closeSearchModal() {
+document.getElementById('searchModal').classList.add('hidden');
+}
+​function joinLiveRoom() {
+showToast('Connected to Live Audio Room! 🎧');
+}
+​function sendVirtualGift(giftName) {
+showToast(Sent virtual gift ${giftName} on stage! 🎁);
+}
+​function handleUserLogout() {
+if(typeof firebase !== 'undefined' && firebase.auth) {
+firebase.auth().signOut().then(() => {
+document.getElementById('profileDrawer').classList.add('hidden');
+document.getElementById('authView').classList.remove('hidden');
+showToast('Logged out successfully');
+});
+} else {
+document.getElementById('profileDrawer').classList.add('hidden');
+document.getElementById('authView').classList.remove('hidden');
+showToast('Logged out successfully');
+}
+}
+​function showToast(msg) {
+const toast = document.getElementById('toastNotification');
+document.getElementById('toastText').textContent = msg;
+toast.classList.remove('hidden');
+setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+}
+</script>
 </body>
 </html>
-
